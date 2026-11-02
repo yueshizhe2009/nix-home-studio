@@ -99,6 +99,19 @@ An optional tag marks the accepted milestone:
 git tag -a m6.4 -m "M6.4 accepted: full build-only loop"
 ```
 
+## Toolchain pin (after the first CI run)
+
+The first CI runs failed twice, both on the runner and not locally:
+
+1. `nhs-adapter`'s fixture used `Session::new(Some(home), …)`, which still reads
+   `XDG_CONFIG_HOME` from the process; GitHub's environment made discovery look
+   outside the fixture. Fixed by building `EnvView` explicitly (audit R13).
+2. The runner's floating `stable` was Rust 1.99, whose new `assert_is_empty`
+   lint rejects three test assertions that 1.98 accepts. The gates were accepted
+   on 1.98, so CI now pins `1.98.0` and the script takes `NHS_TOOLCHAIN`
+   (default `+stable`) instead of hard-coding the channel. Bumping the pin is a
+   deliberate change, not a side effect of a runner update.
+
 ## What the first commit deliberately leaves out
 
 - No CI configuration yet: the gates live in

@@ -53,8 +53,11 @@ jobs:
             pkg-config \
             patchelf
 
-      - name: Install Rust (stable, with the tools the gates use)
-        uses: dtolnay/rust-toolchain@stable
+      # Pinned on purpose. A floating `stable` changed a pedantic lint
+      # (`assert_is_empty` in 1.99) and turned the accepted gate set red without a
+      # code change. Bumping this is its own reviewed commit.
+      - name: Install Rust (the version the gates were accepted on)
+        uses: dtolnay/rust-toolchain@1.98.0
         with:
           components: clippy, rustfmt
 
@@ -87,4 +90,5 @@ jobs:
         env:
           GUI_TARGET: ${{ runner.temp }}/target-gui
           WS_TARGET: ${{ runner.temp }}/target-workspace
+          NHS_TOOLCHAIN: +1.98.0
         run: sh crates/nhs-gui/scripts/check-all.sh

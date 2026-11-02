@@ -9,6 +9,10 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 GUI_TARGET=${GUI_TARGET:-/var/tmp/nhs-gui/t}
 WS_TARGET=${WS_TARGET:-/var/tmp/nhs-home-studio-review-target}
+# The accepted evidence was produced with 1.98; a floating stable changes lints
+# without changing the code. CI pins the version and passes it here; local runs
+# keep using the stable channel.
+TOOLCHAIN=${NHS_TOOLCHAIN:-+stable}
 
 cd "$ROOT"
 echo "== front-end =="
@@ -21,14 +25,14 @@ node crates/nhs-gui/scripts/check-diagnosis.js
 node crates/nhs-gui/scripts/check-apply.js
 
 echo "== gui crate =="
-CARGO_TARGET_DIR="$GUI_TARGET" cargo +stable test --manifest-path crates/nhs-gui/Cargo.toml
-CARGO_TARGET_DIR="$GUI_TARGET" cargo +stable clippy --manifest-path crates/nhs-gui/Cargo.toml --all-targets -- -D warnings
-cargo +stable fmt --manifest-path crates/nhs-gui/Cargo.toml --check
+CARGO_TARGET_DIR="$GUI_TARGET" cargo $TOOLCHAIN test --manifest-path crates/nhs-gui/Cargo.toml
+CARGO_TARGET_DIR="$GUI_TARGET" cargo $TOOLCHAIN clippy --manifest-path crates/nhs-gui/Cargo.toml --all-targets -- -D warnings
+cargo $TOOLCHAIN fmt --manifest-path crates/nhs-gui/Cargo.toml --check
 
 echo "== workspace =="
-CARGO_TARGET_DIR="$WS_TARGET" cargo +stable test --workspace
-CARGO_TARGET_DIR="$WS_TARGET" cargo +stable clippy --workspace --all-targets -- -D warnings
-cargo +stable fmt --all --check
+CARGO_TARGET_DIR="$WS_TARGET" cargo $TOOLCHAIN test --workspace
+CARGO_TARGET_DIR="$WS_TARGET" cargo $TOOLCHAIN clippy --workspace --all-targets -- -D warnings
+cargo $TOOLCHAIN fmt --all --check
 
 echo "== headless flows =="
 "$GUI_TARGET/debug/nhs-gui" --check > /dev/null
