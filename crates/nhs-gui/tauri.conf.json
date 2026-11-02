@@ -1,0 +1,27 @@
+{
+  "productName": "Nix Home Studio",
+  "version": "0.1.0",
+  "identifier": "dev.local.nhs.studio",
+  "build": {
+    "frontendDist": "dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Nix Home Studio",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 900,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    },
+    "withGlobalTauri": true
+  },
+  "bundle": {
+    "active": false,
+    "icon": ["icons/icon.png"]
+  }
+}

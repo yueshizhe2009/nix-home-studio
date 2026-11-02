@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Nix Home Studio — prototype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="toolbar">
+      <h1><span id="app-title"></span> <span class="tag" id="prototype-tag"></span></h1>
+      <button id="lang" class="ghost" type="button" aria-label="Switch language"></button>
+    </div>
+    <p id="switch-notice" class="notice" role="note"></p>
+  </header>
+
+  <nav id="steps" aria-label="Steps"></nav>
+
+  <main id="panel" aria-live="polite"></main>
+
+  <footer><span id="status"></span></footer>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

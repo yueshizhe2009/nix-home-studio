@@ -1,0 +1,23 @@
+# Upstream repositories are separate read-only clones, not part of this project's
+# history. They are studied in place and never modified.
+/upstream/
+
+# Rust build output. The project keeps every workspace's target outside the tree
+# (CARGO_TARGET_DIR under /var/tmp), so this only guards against accidents.
+target/
+
+# Tauri generates these at build time; they are not source.
+**/gen/schemas/
+
+# Nix build results and direnv state.
+/result
+/result-*
+.direnv/
+
+# Node tooling, if it is ever added. The GUI deliberately has no npm build step.
+node_modules/
+
+# Local junk.
+*.log
+*.swp
+.DS_Store

@@ -1,0 +1,1049 @@
+# Curated package catalogue.
+#
+# What this file is: a small, offline, opinionated list of packages a beginner
+# is likely to want, with the metadata a plain `nix search` does not give —
+# licence, platform, and whether Nix will refuse it without an opt-in.
+#
+# What it is not: a mirror of nixpkgs. Every `attr` is an attribute path under
+# `pkgs`, usable verbatim as `pkgs.<attr>`.
+#
+# Metadata policy
+# ---------------
+# * `license` is omitted when it could not be stated with confidence. An absent
+#   licence is displayed as "unknown" and is never treated as "not allowed".
+# * `platforms` is omitted when support is unknown — which means "show it", not
+#   "hide it" (architecture §5.1). Otherwise it lists the systems this package is
+#   known to build on.
+# * `unfree` is set only where Nix itself refuses without `allowUnfree`.
+# * The list is deliberately short. Padding it to a round number would mean
+#   inventing metadata, which is worse than a smaller honest list.
+format_version = 1
+
+[[entries]]
+attr = "git"
+name = "git"
+description = "Distributed version control"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "gh"
+name = "GitHub CLI"
+description = "GitHub from the terminal: pull requests, issues, actions"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "ripgrep"
+name = "ripgrep"
+description = "Fast recursive search through files, respects .gitignore"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Unlicense"
+
+[[entries]]
+attr = "fd"
+name = "fd"
+description = "Simple, fast alternative to find"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Apache-2.0"
+
+[[entries]]
+attr = "bat"
+name = "bat"
+description = "cat with syntax highlighting and line numbers"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Apache-2.0"
+
+[[entries]]
+attr = "eza"
+name = "eza"
+description = "Modern replacement for ls, with colours and git status"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "fzf"
+name = "fzf"
+description = "Fuzzy finder for the command line"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "jq"
+name = "jq"
+description = "Command-line JSON processor"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "yq"
+name = "yq"
+description = "Command-line YAML, JSON and XML processor"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "delta"
+name = "delta"
+description = "Syntax-highlighting pager for git and diff output"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "lazygit"
+name = "lazygit"
+description = "Terminal UI for git"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "just"
+name = "just"
+description = "Command runner, a simpler make"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "CC0-1.0"
+
+[[entries]]
+attr = "gnumake"
+name = "GNU make"
+description = "Build automation tool"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "cmake"
+name = "CMake"
+description = "Cross-platform build system generator"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "BSD-3-Clause"
+
+[[entries]]
+attr = "gcc"
+name = "GCC"
+description = "GNU Compiler Collection"
+category = "development"
+platforms = ["linux"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "clang"
+name = "Clang"
+description = "C/C++ compiler from the LLVM project"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0 WITH LLVM-exception"
+
+[[entries]]
+attr = "rustc"
+name = "Rust"
+description = "Rust compiler"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Apache-2.0"
+
+[[entries]]
+attr = "cargo"
+name = "Cargo"
+description = "Rust package manager and build tool"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Apache-2.0"
+
+[[entries]]
+attr = "go"
+name = "Go"
+description = "Go programming language toolchain"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "BSD-3-Clause"
+
+[[entries]]
+attr = "python3"
+name = "Python 3"
+description = "Python interpreter"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "PSF-2.0"
+
+[[entries]]
+attr = "nodejs"
+name = "Node.js"
+description = "JavaScript runtime"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "bun"
+name = "Bun"
+description = "Fast JavaScript runtime and package manager"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "deno"
+name = "Deno"
+description = "Secure JavaScript and TypeScript runtime"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "pnpm"
+name = "pnpm"
+description = "Fast, disk-efficient Node.js package manager"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "typescript"
+name = "TypeScript"
+description = "TypeScript compiler and language server"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "sqlite"
+name = "SQLite"
+description = "Embedded SQL database"
+category = "development"
+platforms = ["linux", "darwin"]
+
+[[entries]]
+attr = "postgresql"
+name = "PostgreSQL"
+description = "Relational database server and client"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "PostgreSQL"
+
+[[entries]]
+attr = "hyperfine"
+name = "hyperfine"
+description = "Command-line benchmarking tool"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Apache-2.0"
+
+[[entries]]
+attr = "tokei"
+name = "tokei"
+description = "Count lines of code by language"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT OR Apache-2.0"
+
+[[entries]]
+attr = "shellcheck"
+name = "ShellCheck"
+description = "Static analysis for shell scripts"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "shfmt"
+name = "shfmt"
+description = "Shell script formatter"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "BSD-3-Clause"
+
+[[entries]]
+attr = "docker"
+name = "Docker"
+description = "Container runtime and CLI"
+category = "development"
+platforms = ["linux"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "podman"
+name = "Podman"
+description = "Daemonless container runtime"
+category = "development"
+platforms = ["linux"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "kubectl"
+name = "kubectl"
+description = "Kubernetes command-line client"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "helm"
+name = "Helm"
+description = "Kubernetes package manager"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "ansible"
+name = "Ansible"
+description = "Configuration management and automation"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "nil"
+name = "nil"
+description = "Nix language server"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "nixd"
+name = "nixd"
+description = "Nix language server with option completion"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "alejandra"
+name = "alejandra"
+description = "Opinionated Nix code formatter"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "nixfmt-rfc-style"
+name = "nixfmt"
+description = "Official Nix formatter (RFC 166 style)"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "statix"
+name = "statix"
+description = "Linter for Nix, suggests fixes"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "deadnix"
+name = "deadnix"
+description = "Find and remove unused Nix code"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "nix-tree"
+name = "nix-tree"
+description = "Browse a Nix store path and its dependencies interactively"
+category = "nix"
+platforms = ["linux", "darwin"]
+
+[[entries]]
+attr = "nix-index"
+name = "nix-index"
+description = "Locate the package that contains a file in nixpkgs"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "nix-direnv"
+name = "nix-direnv"
+description = "Fast, cached direnv integration for Nix"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "nvd"
+name = "nvd"
+description = "Diff two Nix generations before you switch"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "nh"
+name = "nh"
+description = "Friendly Nix helper for common workflows"
+category = "nix"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "direnv"
+name = "direnv"
+description = "Load environment variables per directory"
+category = "development"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "tmux"
+name = "tmux"
+description = "Terminal multiplexer"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "ISC"
+
+[[entries]]
+attr = "zellij"
+name = "zellij"
+description = "Terminal workspace with panes, tabs and layouts"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "kitty"
+name = "kitty"
+description = "Fast GPU-accelerated terminal emulator"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "alacritty"
+name = "Alacritty"
+description = "GPU-accelerated terminal emulator"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "wezterm"
+name = "WezTerm"
+description = "GPU terminal emulator and multiplexer"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "foot"
+name = "foot"
+description = "Fast Wayland terminal emulator"
+category = "terminal"
+platforms = ["linux"]
+license = "MIT"
+
+[[entries]]
+attr = "starship"
+name = "Starship"
+description = "Fast, customisable shell prompt"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "ISC"
+
+[[entries]]
+attr = "zoxide"
+name = "zoxide"
+description = "Smarter cd, remembers the directories you use"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "atuin"
+name = "atuin"
+description = "Shell history with search and sync"
+category = "terminal"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "zsh"
+name = "Zsh"
+description = "Shell with powerful completion and theming"
+category = "shell"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "fish"
+name = "fish"
+description = "Friendly interactive shell"
+category = "shell"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "bash"
+name = "Bash"
+description = "GNU Bourne Again shell"
+category = "shell"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "nushell"
+name = "Nushell"
+description = "Shell with structured data pipelines"
+category = "shell"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "neovim"
+name = "Neovim"
+description = "Modern Vim fork, extensible in Lua"
+category = "editor"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "helix"
+name = "Helix"
+description = "Modal editor with built-in LSP support"
+category = "editor"
+platforms = ["linux", "darwin"]
+license = "MPL-2.0"
+
+[[entries]]
+attr = "emacs"
+name = "Emacs"
+description = "Extensible, self-documenting editor"
+category = "editor"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "micro"
+name = "micro"
+description = "Terminal editor with familiar keybindings"
+category = "editor"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "vscode"
+name = "Visual Studio Code"
+description = "Microsoft's code editor (proprietary build)"
+category = "editor"
+platforms = ["linux", "darwin"]
+unfree = true
+
+[[entries]]
+attr = "vscodium"
+name = "VSCodium"
+description = "Telemetry-free build of VS Code"
+category = "editor"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "zed-editor"
+name = "Zed"
+description = "Fast collaborative code editor"
+category = "editor"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "firefox"
+name = "Firefox"
+description = "Web browser"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "MPL-2.0"
+
+[[entries]]
+attr = "chromium"
+name = "Chromium"
+description = "Open-source browser that Chrome is built from"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "BSD-3-Clause"
+
+[[entries]]
+attr = "google-chrome"
+name = "Google Chrome"
+description = "Google's proprietary browser"
+category = "internet"
+platforms = ["linux"]
+unfree = true
+
+[[entries]]
+attr = "brave"
+name = "Brave"
+description = "Browser with built-in ad blocking"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "MPL-2.0"
+
+[[entries]]
+attr = "thunderbird"
+name = "Thunderbird"
+description = "Email, calendar and news client"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "MPL-2.0"
+
+[[entries]]
+attr = "telegram-desktop"
+name = "Telegram"
+description = "Telegram desktop client"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "signal-desktop"
+name = "Signal"
+description = "Signal desktop client"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "element-desktop"
+name = "Element"
+description = "Matrix chat client"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "discord"
+name = "Discord"
+description = "Voice, video and text chat (proprietary)"
+category = "internet"
+platforms = ["linux"]
+unfree = true
+
+[[entries]]
+attr = "slack"
+name = "Slack"
+description = "Team chat (proprietary)"
+category = "internet"
+platforms = ["linux"]
+unfree = true
+
+[[entries]]
+attr = "zoom"
+name = "Zoom"
+description = "Video meetings (proprietary)"
+category = "internet"
+platforms = ["linux"]
+unfree = true
+
+[[entries]]
+attr = "spotify"
+name = "Spotify"
+description = "Music streaming (proprietary)"
+category = "internet"
+platforms = ["linux"]
+unfree = true
+
+[[entries]]
+attr = "qbittorrent"
+name = "qBittorrent"
+description = "BitTorrent client"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "yt-dlp"
+name = "yt-dlp"
+description = "Download video and audio from many sites"
+category = "internet"
+platforms = ["linux", "darwin"]
+license = "Unlicense"
+
+[[entries]]
+attr = "mpv"
+name = "mpv"
+description = "Minimal, scriptable media player"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "vlc"
+name = "VLC"
+description = "Media player that handles most formats"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "ffmpeg"
+name = "FFmpeg"
+description = "Convert, record and stream audio and video"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "LGPL-2.1"
+
+[[entries]]
+attr = "imagemagick"
+name = "ImageMagick"
+description = "Convert and edit images from the command line"
+category = "media"
+platforms = ["linux", "darwin"]
+
+[[entries]]
+attr = "obs-studio"
+name = "OBS Studio"
+description = "Screen recording and live streaming"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "gimp"
+name = "GIMP"
+description = "Image editor"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "inkscape"
+name = "Inkscape"
+description = "Vector graphics editor"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "krita"
+name = "Krita"
+description = "Digital painting studio"
+category = "media"
+platforms = ["linux"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "blender"
+name = "Blender"
+description = "3D modelling, animation and rendering"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "audacity"
+name = "Audacity"
+description = "Audio recording and editing"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "handbrake"
+name = "HandBrake"
+description = "Video transcoder"
+category = "media"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "libreoffice"
+name = "LibreOffice"
+description = "Office suite: documents, spreadsheets, slides"
+category = "office"
+platforms = ["linux", "darwin"]
+license = "MPL-2.0"
+
+[[entries]]
+attr = "onlyoffice-desktopeditors"
+name = "ONLYOFFICE"
+description = "Office suite with strong Microsoft format support"
+category = "office"
+platforms = ["linux"]
+license = "AGPL-3.0"
+
+[[entries]]
+attr = "pandoc"
+name = "Pandoc"
+description = "Convert between document formats"
+category = "office"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "zathura"
+name = "zathura"
+description = "Keyboard-driven PDF and document viewer"
+category = "office"
+platforms = ["linux"]
+license = "Zlib"
+
+[[entries]]
+attr = "okular"
+name = "Okular"
+description = "Document viewer from KDE"
+category = "office"
+platforms = ["linux"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "calibre"
+name = "Calibre"
+description = "E-book manager and converter"
+category = "office"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "joplin-desktop"
+name = "Joplin"
+description = "Note taking with sync and Markdown"
+category = "office"
+platforms = ["linux", "darwin"]
+license = "AGPL-3.0"
+
+[[entries]]
+attr = "obsidian"
+name = "Obsidian"
+description = "Markdown notes over a local vault (proprietary)"
+category = "office"
+platforms = ["linux", "darwin"]
+unfree = true
+
+[[entries]]
+attr = "htop"
+name = "htop"
+description = "Interactive process viewer"
+category = "system"
+platforms = ["linux"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "btop"
+name = "btop"
+description = "Resource monitor with graphs"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "bottom"
+name = "bottom"
+description = "Cross-platform system monitor"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "dust"
+name = "dust"
+description = "Disk usage in a tree, with a bar chart"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "duf"
+name = "duf"
+description = "Disk usage and free space, readable"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "ncdu"
+name = "ncdu"
+description = "Disk usage browser"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "MIT"
+
+[[entries]]
+attr = "tree"
+name = "tree"
+description = "List a directory as a tree"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "unzip"
+name = "unzip"
+description = "Extract ZIP archives"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "Info-ZIP"
+
+[[entries]]
+attr = "zip"
+name = "zip"
+description = "Create ZIP archives"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "Info-ZIP"
+
+[[entries]]
+attr = "p7zip"
+name = "p7zip"
+description = "7-Zip archiver"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "LGPL-2.1"
+
+[[entries]]
+attr = "rsync"
+name = "rsync"
+description = "Incremental file transfer and backup"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "curl"
+name = "curl"
+description = "Transfer data with URLs"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "curl"
+
+[[entries]]
+attr = "wget"
+name = "wget"
+description = "Download files over HTTP and FTP"
+category = "system"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "gnupg"
+name = "GnuPG"
+description = "OpenPGP encryption and signing"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "age"
+name = "age"
+description = "Simple, modern file encryption"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "BSD-3-Clause"
+
+[[entries]]
+attr = "sops"
+name = "SOPS"
+description = "Encrypted secrets in version control"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "MPL-2.0"
+
+[[entries]]
+attr = "openssl"
+name = "OpenSSL"
+description = "TLS toolkit and certificate utilities"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "Apache-2.0"
+
+[[entries]]
+attr = "wireshark"
+name = "Wireshark"
+description = "Network protocol analyser"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "keepassxc"
+name = "KeePassXC"
+description = "Offline password manager"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "bitwarden-desktop"
+name = "Bitwarden"
+description = "Password manager desktop client"
+category = "security"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "qemu"
+name = "QEMU"
+description = "Machine emulator and virtualiser"
+category = "virtualisation"
+platforms = ["linux", "darwin"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "virt-manager"
+name = "virt-manager"
+description = "Desktop UI for libvirt virtual machines"
+category = "virtualisation"
+platforms = ["linux"]
+license = "GPL-2.0"
+
+[[entries]]
+attr = "distrobox"
+name = "Distrobox"
+description = "Run another distribution's tools in a container"
+category = "virtualisation"
+platforms = ["linux"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "steam"
+name = "Steam"
+description = "Game store and launcher (proprietary)"
+category = "games"
+platforms = ["linux"]
+unfree = true
+
+[[entries]]
+attr = "lutris"
+name = "Lutris"
+description = "Game launcher for many platforms"
+category = "games"
+platforms = ["linux"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "prismlauncher"
+name = "Prism Launcher"
+description = "Minecraft launcher with mod management"
+category = "games"
+platforms = ["linux", "darwin"]
+license = "GPL-3.0"
+
+[[entries]]
+attr = "mangohud"
+name = "MangoHud"
+description = "Overlay with frame rate and GPU statistics"
+category = "games"
+platforms = ["linux"]
+license = "MIT"
+
+[[entries]]
+attr = "wine"
+name = "Wine"
+description = "Run Windows applications on Linux"
+category = "games"
+platforms = ["linux"]
+license = "LGPL-2.1"

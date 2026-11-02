@@ -1,0 +1,16 @@
+[package]
+name = "nhs-adapter"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+nhs-app = { path = "../nhs-app" }
+nhs-core = { path = "../nhs-core" }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true

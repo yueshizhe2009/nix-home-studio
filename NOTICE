@@ -1,0 +1,15 @@
+Nix Home Studio
+Copyright 2026 Nix Home Studio contributors
+
+This product includes software developed as part of NixBox
+(https://github.com/SINGH-RAJVEER/nixbox), licensed under the Apache
+License, Version 2.0.
+
+No code from https://github.com/adhamsalama/nix-home-manager-gui is
+included in this product. That project is used solely as a design and
+behaviour reference, because it carries no explicit licence.
+
+Donated source modules, if any, are recorded next to the code in
+crates/nhs-core/src/donated/<module>/PROVENANCE.md together with the upstream
+repository, the exact upstream commit, and the original file path. The rules
+for accepting donated code are in src/donated/README.md.

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nix Home Studio</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <h1 id="app-title">Nix Home Studio</h1>
+        <span class="tag" id="app-version"></span>
+      </div>
+      <div class="header-actions">
+        <button id="lang" class="ghost" type="button"></button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <nav id="steps" class="steps" aria-label="Steps"></nav>
+
+      <main class="panel">
+        <div class="panel-scroll">
+          <section id="panel-content"></section>
+        </div>
+        <div class="panel-actions" id="actions"></div>
+      </main>
+    </div>
+
+    <footer class="app-footer">
+      <p id="status" role="status" aria-live="polite"></p>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
