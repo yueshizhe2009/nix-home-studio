@@ -1,0 +1,90 @@
+# CI for Nix Home Studio.
+#
+# Separate commit on purpose: the M6.4 baseline commit is the product snapshot
+# described in docs/repo-baseline.md. Mixing CI into it would make two changes
+# that are easier to review — and to revert — apart.
+#
+# The workflow runs the project's own gate script, not a second test standard:
+# crates/nhs-gui/scripts/check-all.sh (format, clippy, both test suites, the
+# front-end checks, the write-boundary scan, `--check` and `--flow-check`).
+#
+# No access to a real Home Manager configuration and no activation: `--flow-check`
+# builds its own temporary HOME, fake `home-manager` and temporary store, then
+# removes the tree.
+
+name: ci
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  gates:
+    name: gates (ubuntu)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Tauri / WebKitGTK build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            pkg-config \
+            patchelf
+
+      - name: Install Rust (stable, with the tools the gates use)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Install Node (front-end checks)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Cache cargo registry and git
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'crates/nhs-gui/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - name: Cache build output
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.temp }}/target-workspace
+            ${{ runner.temp }}/target-gui
+          key: target-${{ runner.os }}-${{ github.sha }}
+          restore-keys: target-${{ runner.os }}-
+
+      # The script keeps both target directories configurable, so CI can cache
+      # them without changing the project layout.
+      - name: Run all gates
+        env:
+          GUI_TARGET: ${{ runner.temp }}/target-gui
+          WS_TARGET: ${{ runner.temp }}/target-workspace
+        run: sh crates/nhs-gui/scripts/check-all.sh
