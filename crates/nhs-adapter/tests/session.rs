@@ -64,7 +64,15 @@ impl Fixture {
     }
 
     fn session(&self) -> Session {
-        Session::new(Some(&self.home), Some(&self.state))
+        // Build the environment explicitly. `Session::new` reads the process
+        // environment, and a runner (or a developer) with `XDG_CONFIG_HOME` set
+        // would make discovery look outside the fixture — the failure CI hit.
+        let mut env = nhs_core::EnvView::from_process();
+        env.home = self.home.clone();
+        env.xdg_config_home = None;
+        env.xdg_state_home = None;
+        env.store_root = self.dir.path().join("store");
+        Session::with_env(env, self.state.clone())
     }
 
     fn config(&self) -> PathBuf {

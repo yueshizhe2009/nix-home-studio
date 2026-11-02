@@ -33,6 +33,11 @@ pub struct Session {
 
 impl Session {
     /// `home` overrides `$HOME`; `state_dir` is the final state directory.
+    ///
+    /// Everything else still comes from the process environment, including
+    /// `XDG_CONFIG_HOME` and `XDG_STATE_HOME`. A caller that needs isolation
+    /// (tests, the headless flow check) should build an [`EnvView`] and use
+    /// [`Self::with_env`] instead of overriding only the home here.
     #[must_use]
     pub fn new(home: Option<&Path>, state_dir: Option<&Path>) -> Self {
         let mut env = EnvView::from_process();
