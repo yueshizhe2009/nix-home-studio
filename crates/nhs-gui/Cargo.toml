@@ -6,6 +6,7 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Nix Home Studio — the desktop application"
+repository = "https://github.com/yueshizhe2009/nix-home-studio"
 
 [dependencies]
 nhs-adapter = { path = "../nhs-adapter" }
