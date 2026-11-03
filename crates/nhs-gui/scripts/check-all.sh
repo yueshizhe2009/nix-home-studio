@@ -23,6 +23,7 @@ node crates/nhs-gui/scripts/check-i18n.js
 node crates/nhs-gui/scripts/check-diff-fold.js
 node crates/nhs-gui/scripts/check-diagnosis.js
 node crates/nhs-gui/scripts/check-apply.js
+node crates/nhs-gui/scripts/check-a11y.js
 
 echo "== gui crate =="
 CARGO_TARGET_DIR="$GUI_TARGET" cargo $TOOLCHAIN test --manifest-path crates/nhs-gui/Cargo.toml

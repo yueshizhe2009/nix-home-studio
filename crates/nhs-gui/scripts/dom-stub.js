@@ -56,6 +56,10 @@ class Node {
     return this.attributes[name];
   }
 
+  removeAttribute(name) {
+    delete this.attributes[name];
+  }
+
   addEventListener() {}
 
   focus() {
@@ -87,15 +91,49 @@ function makeDocument() {
     node.id = id;
     byId.set(id, node);
   }
-  return {
+  const document = {
     documentElement: {},
     body: new Node("body"),
     activeElement: null,
     createElement: (tag) => new Node(tag),
-    getElementById: (id) => byId.get(id) ?? null,
-    querySelector: () => null,
+    // Rendered nodes register their ids as they are appended, so a renderer can
+    // find what it just created (the real document does this for free).
+    getElementById: (id) => {
+      if (byId.has(id)) return byId.get(id);
+      const find = (node) => {
+        if (node.id === id) return node;
+        for (const child of node.children) {
+          const hit = find(child);
+          if (hit) return hit;
+        }
+        return null;
+      };
+      for (const node of byId.values()) {
+        const hit = find(node);
+        if (hit) return hit;
+      }
+      return find(document.body);
+    },
+    querySelector: (selector) => {
+      const match = /^\[data-focus="(.+)"\]$/.exec(selector);
+      if (!match) return null;
+      const find = (node) => {
+        if (node.dataset && node.dataset.focus === match[1]) return node;
+        for (const child of node.children) {
+          const hit = find(child);
+          if (hit) return hit;
+        }
+        return null;
+      };
+      for (const node of byId.values()) {
+        const hit = find(node);
+        if (hit) return hit;
+      }
+      return null;
+    },
     querySelectorAll: () => [],
   };
+  return document;
 }
 
 const sandbox = {
@@ -125,6 +163,9 @@ function load(distDir) {
       "globalThis.__renderConfirm = renderConfirm;" +
       "globalThis.__renderLog = renderLog;" +
       "globalThis.__renderHistory = renderHistory;" +
+      "globalThis.__renderContent = renderContent;" +
+      "globalThis.__renderError = renderError;" +
+      "globalThis.__render = render;" +
       "globalThis.__setLang = applyLanguage;" +
       "globalThis.__t = t;",
     sandbox,

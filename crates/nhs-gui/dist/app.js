@@ -30,7 +30,12 @@ let busy = false;
 
 function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
-  Object.assign(node, props);
+  for (const [key, value] of Object.entries(props)) {
+    // `aria-*` are attributes, not DOM properties: assigning the property does
+    // nothing, so a label written that way never reaches the accessibility tree.
+    if (key.startsWith("aria-") || key === "scope") node.setAttribute(key, value);
+    else node[key] = value;
+  }
   for (const child of children) node.append(child);
   return node;
 }
@@ -82,6 +87,10 @@ function neighbourFocus(key) {
 
 function restoreFocus(previous, previousStep, state) {
   if (!previous) return;
+  if (previousStep !== state.step) {
+    screenTitle();
+    return;
+  }
   const target = document.querySelector(`[data-focus="${CSS.escape(previous.key)}"]`);
   if (target && !target.disabled) {
     target.focus();
@@ -142,6 +151,8 @@ function renderError(error) {
     el("h3", { textContent: t("error_title") }),
     el("p", { textContent: detail ? `${copy.message} (${detail})` : copy.message }),
   ]);
+  // A refused action must be announced, not just drawn above the fold.
+  box.setAttribute("role", "alert");
   if (copy.hint) {
     box.append(el("p", { className: "muted", textContent: `${t("error_hint")}: ${copy.hint}` }));
   }
@@ -203,6 +214,7 @@ function render(state) {
 
   const previous = captureFocus();
   const previousStep = last ? last.step : null;
+  const wasBusy = last && last.busy ? last.busy.kind : null;
   last = state;
 
   document.getElementById("app-title").textContent = t("app_title");
@@ -220,6 +232,8 @@ function render(state) {
 
   const content = document.getElementById("panel-content");
   content.replaceChildren();
+  if (state.busy) content.setAttribute("aria-busy", "true");
+  else content.removeAttribute("aria-busy");
   renderContent(state, content);
 
   const heading = content.querySelector("h2");
@@ -343,6 +357,14 @@ function render(state) {
   });
 
   restoreFocus(previous, previousStep, state);
+
+  // A finished validation replaces the running text with a result. Move focus
+  // to it so the result is read out; the user started the job, so this is not a
+  // surprise focus grab.
+  if (wasBusy === "validation" && !state.busy && state.validation) {
+    const result = document.getElementById("validation-result");
+    if (result) result.focus();
+  }
 }
 
 function factRow(label, value) {
@@ -368,7 +390,7 @@ function renderContent(state, panel) {
       renderConfirm(state, panel);
       return;
     case "log":
-      renderLogLines(state, panel);
+      renderLog(state, panel);
       return;
     case "history":
       renderHistory(state, panel);
@@ -417,12 +439,15 @@ function renderCatalog(state, panel) {
     return;
   }
 
-  const table = el("table", { className: "hits" }, [
+  const table = el("table", {
+    className: "hits",
+    "aria-label": t("catalog_heading"),
+  }, [
     el("thead", {}, [
       el("tr", {}, [
-        el("th", { textContent: "" }),
-        el("th", { textContent: t("catalog_heading") }),
-        el("th", { textContent: t("licence") }),
+        el("th", { textContent: "", scope: "col" }),
+        el("th", { textContent: t("catalog_heading"), scope: "col" }),
+        el("th", { textContent: t("licence"), scope: "col" }),
       ]),
     ]),
   ]);
@@ -541,7 +566,10 @@ function renderValidation(state, panel) {
   }
 
   const report = state.validation;
-  panel.append(
+  // Focusable result container: the worker finishing moves focus here so the
+  // outcome is announced.
+  const result = el("div", { id: "validation-result", tabIndex: -1 });
+  result.append(
     el("p", {
       className: "muted",
       textContent: `${t("validation_command")}: ${report.command} · ${report.millis} ms`,
@@ -549,12 +577,13 @@ function renderValidation(state, panel) {
   );
 
   if (report.success) {
-    panel.append(
+    result.append(
       el("div", { className: "notice ok" }, [
         el("p", { textContent: t("validation_success") }),
       ]),
     );
-    panel.append(el("p", { className: "muted", textContent: t("validation_next") }));
+    result.append(el("p", { className: "muted", textContent: t("validation_next") }));
+    panel.append(result);
     renderLogLines(state, panel);
     return;
   }
@@ -585,7 +614,8 @@ function renderValidation(state, panel) {
       el("p", { className: "muted", textContent: `${t("validation_scratch")}: ${report.scratch}` }),
     );
   }
-  panel.append(block);
+  result.append(block);
+  panel.append(result);
   renderLog(state, panel);
 }
 
@@ -654,12 +684,15 @@ function renderHistory(state, panel) {
   if (history.generations.length === 0) {
     panel.append(el("p", { className: "muted", textContent: t("history_no_generations") }));
   } else {
-    const table = el("table", { className: "hits" }, [
+    const table = el("table", {
+      className: "hits",
+      "aria-label": t("history_generations"),
+    }, [
       el("thead", {}, [
         el("tr", {}, [
-          el("th", { textContent: t("history_col_id") }),
-          el("th", { textContent: t("history_col_link") }),
-          el("th", { textContent: t("history_col_target") }),
+          el("th", { textContent: t("history_col_id"), scope: "col" }),
+          el("th", { textContent: t("history_col_link"), scope: "col" }),
+          el("th", { textContent: t("history_col_target"), scope: "col" }),
         ]),
       ]),
     ]);
@@ -681,12 +714,15 @@ function renderHistory(state, panel) {
   if (history.snapshots.length === 0) {
     panel.append(el("p", { className: "muted", textContent: t("history_no_snapshots") }));
   } else {
-    const table = el("table", { className: "hits" }, [
+    const table = el("table", {
+      className: "hits",
+      "aria-label": t("history_snapshots"),
+    }, [
       el("thead", {}, [
         el("tr", {}, [
-          el("th", { textContent: t("history_col_id") }),
-          el("th", { textContent: t("history_col_outcome") }),
-          el("th", { textContent: t("history_col_files") }),
+          el("th", { textContent: t("history_col_id"), scope: "col" }),
+          el("th", { textContent: t("history_col_outcome"), scope: "col" }),
+          el("th", { textContent: t("history_col_files"), scope: "col" }),
         ]),
       ]),
     ]);
