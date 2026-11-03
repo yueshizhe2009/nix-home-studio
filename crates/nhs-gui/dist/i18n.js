@@ -42,7 +42,7 @@ const I18N = {
     validation_scratch: "Kept for inspection",
     validation_log: "Build output",
     validation_log_tail: "Showing the last {shown} of {total} lines.",
-    validation_next: "Next: review and apply. That step arrives in the next stage.",
+    validation_next: "Next: review and apply.",
     readiness_already_applied: "This exact plan has already been applied.",
 
     confirm_heading: "Confirm",
@@ -245,7 +245,7 @@ const I18N = {
     validation_scratch: "保留的副本",
     validation_log: "构建输出",
     validation_log_tail: "显示最后 {shown} 行，共 {total} 行。",
-    validation_next: "下一步是审查并应用，该步骤在后续阶段提供。",
+    validation_next: "下一步：审查并应用。",
     readiness_already_applied: "这份计划已经应用过了。",
 
     confirm_heading: "确认",

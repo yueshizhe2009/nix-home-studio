@@ -19,7 +19,7 @@
 //! path and never builds or spawns a command line; the crate has no process
 //! spawning at all in M1.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde_json::{json, Value};
 
@@ -79,6 +79,21 @@ pub enum HmInvocation {
 }
 
 impl HmInvocation {
+    /// The resolved executable, when the strategy produced one.
+    ///
+    /// `NixRun` and `Absent` carry no binary: the caller must either fall back to
+    /// `PATH` or report that the tool is missing.
+    #[must_use]
+    pub fn binary(&self) -> Option<&Path> {
+        match self {
+            Self::Binary(binary)
+            | Self::FromGeneration { binary, .. }
+            | Self::FromStore { binary, .. }
+            | Self::ProfileElement { binary, .. } => Some(binary),
+            Self::NixRun { .. } | Self::Absent => None,
+        }
+    }
+
     /// Stable strategy name used in JSON and in `attempts`.
     #[must_use]
     pub fn strategy(&self) -> &'static str {
@@ -358,6 +373,20 @@ fn find_in_generation(fs: &dyn FsView, env: &EnvView) -> (Option<HmInvocation>, 
     }
 
     if candidates.is_empty() {
+        // A distribution may install Home Manager without linking a profile; the
+        // command is still in the store, and that is what validation must run.
+        if let Some((invocation, detail)) = from_store(fs, env) {
+            let binary = invocation
+                .binary()
+                .map(|path| path.display().to_string())
+                .unwrap_or_default();
+            return (
+                Some(invocation),
+                format!(
+                    "no HM generation profile; found home-manager in the store at {binary}{detail}"
+                ),
+            );
+        }
         return (
             None,
             format!(
@@ -403,43 +432,15 @@ fn find_in_generation(fs: &dyn FsView, env: &EnvView) -> (Option<HmInvocation>, 
 
         // A Home Manager generation does not ship the `home-manager` command: its
         // `bin/` holds only `home-manager-generation`, and `home-path` is the user's
-        // package environment. The command lives in its own derivation in the store,
-        // so scan the store for it before giving up on a local binary.
-        let candidates = find_home_managers_in_store(fs, env);
-        if let Some(best) = candidates.first() {
-            let alternatives = candidates.len().saturating_sub(1);
-            let detail = if alternatives == 0 {
-                String::new()
-            } else {
-                format!(
-                    "; chose version {} over {} other candidate(s): {}",
-                    best.version,
-                    alternatives,
-                    candidates
-                        .iter()
-                        .skip(1)
-                        .map(|candidate| format!(
-                            "{} ({})",
-                            candidate.binary.display(),
-                            candidate.version
-                        ))
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )
-            };
+        // package environment. The command lives in its own derivation in the store.
+        if let Some((invocation, detail)) = from_store(fs, env) {
+            let binary = invocation
+                .binary()
+                .map(|path| path.display().to_string())
+                .unwrap_or_default();
             return (
-                Some(HmInvocation::FromStore {
-                    binary: best.binary.clone(),
-                    version: best.version.clone(),
-                    candidates: candidates
-                        .iter()
-                        .map(|candidate| candidate.binary.clone())
-                        .collect(),
-                }),
-                format!(
-                    "generation has no home-manager binary; found it in the store at {}{detail}",
-                    best.binary.display()
-                ),
+                Some(invocation),
+                format!("generation has no home-manager binary; found it in the store at {binary}{detail}"),
             );
         }
 
@@ -547,6 +548,40 @@ fn resolve_nixos_rebuild(fs: &dyn FsView, env: &EnvView) -> (Option<PathBuf>, St
 
 fn is_file(fs: &dyn FsView, path: &std::path::Path) -> bool {
     fs.exists(path) && !fs.is_dir(path)
+}
+
+/// Resolve `home-manager` by scanning the store, with the audit trail the
+/// resolution report expects.
+fn from_store(fs: &dyn FsView, env: &EnvView) -> Option<(HmInvocation, String)> {
+    let candidates = find_home_managers_in_store(fs, env);
+    let best = candidates.first()?;
+    let alternatives = candidates.len().saturating_sub(1);
+    let detail = if alternatives == 0 {
+        String::new()
+    } else {
+        format!(
+            "; chose version {} over {} other candidate(s): {}",
+            best.version,
+            alternatives,
+            candidates
+                .iter()
+                .skip(1)
+                .map(|candidate| format!("{} ({})", candidate.binary.display(), candidate.version))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    Some((
+        HmInvocation::FromStore {
+            binary: best.binary.clone(),
+            version: best.version.clone(),
+            candidates: candidates
+                .iter()
+                .map(|candidate| candidate.binary.clone())
+                .collect(),
+        },
+        detail,
+    ))
 }
 
 /// Scan the store for every `home-manager` command, best candidate first.

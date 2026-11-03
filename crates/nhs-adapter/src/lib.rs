@@ -151,7 +151,19 @@ impl Session {
         let Some(prepared) = guard.as_ref() else {
             return Event::Progress("there is no plan to validate".to_string());
         };
-        let runner = RealRunner::new(&self.env);
+        // Discovery resolves `home-manager` from the store on a host that has none
+        // on PATH (the audit host does exactly this). Validation must run the same
+        // binary, otherwise a store-only installation can never be validated.
+        let mut env = self.env.clone();
+        if let Some(binary) = nhs_core::toolchain::resolve_toolchain(&RealFs, &self.env)
+            .home_manager
+            .binary()
+        {
+            if let Some(dir) = binary.parent() {
+                env.path_entries.insert(0, dir.to_path_buf());
+            }
+        }
+        let runner = RealRunner::new(&env);
         match validation::validate(
             &RealFs,
             &prepared.layout,

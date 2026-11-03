@@ -323,3 +323,51 @@ fn settings_reach_the_plan() {
         other => panic!("expected PlanBuilt, got {other:?}"),
     }
 }
+
+/// The audit host resolves `home-manager` from the store and has none on PATH.
+/// Validation must use the resolved binary, not re-resolve it through PATH.
+#[test]
+fn validation_uses_the_store_toolchain_when_path_is_empty() {
+    let fixture = Fixture::classic();
+    let bin = fixture.dir.path().join("store/abc-home-manager-1.0/bin");
+    fs::create_dir_all(&bin).expect("store bin");
+    let tool = bin.join("home-manager");
+    fs::write(&tool, "#!/bin/sh\nexit 0\n").expect("fake store tool");
+    let mut permissions = fs::metadata(&tool).expect("stat").permissions();
+    std::os::unix::fs::PermissionsExt::set_mode(&mut permissions, 0o755);
+    fs::set_permissions(&tool, permissions).expect("chmod");
+
+    let env = nhs_core::EnvView {
+        home: fixture.home.clone(),
+        user: Some("tester".to_string()),
+        path_entries: Vec::new(),
+        xdg_config_home: None,
+        xdg_state_home: None,
+        store_root: fixture.dir.path().join("store"),
+    };
+    let session = Session::with_env(env, fixture.state.clone());
+
+    let mut app = App::new();
+    app.handle(session.discover());
+    app.handle(Event::PackageToggled("firefox".to_string()));
+    let plan_request = app.handle(Event::PlanRequested);
+    let revision = match plan_request.intents.first() {
+        Some(Intent::BuildPlan { revision }) => *revision,
+        other => panic!("expected BuildPlan, got {other:?}"),
+    };
+    app.handle(session.plan(&selection(&["firefox"]), revision));
+    app.handle(Event::DiffReviewed);
+    let validate_request = app.handle(Event::ValidationRequested);
+    let (revision, attempt) = match validate_request.intents.first() {
+        Some(Intent::Validate { revision, attempt }) => (*revision, *attempt),
+        other => panic!("expected Validate, got {other:?}"),
+    };
+
+    let mut sink = |_: nhs_core::proc::Stream, _: &str| {};
+    match session.validate(revision, attempt, &mut sink) {
+        Event::ValidationFinished { report, .. } => {
+            assert!(report.success, "the store toolchain must be used");
+        }
+        other => panic!("validation did not run: {other:?}"),
+    }
+}
