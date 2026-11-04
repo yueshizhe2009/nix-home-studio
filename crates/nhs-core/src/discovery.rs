@@ -523,6 +523,42 @@ pub fn generation_links(fs: &dyn FsView, profiles: &Path) -> Vec<GenerationLink>
     links
 }
 
+/// The generation list plus which generation the `home-manager` profile points at.
+///
+/// Read-only: this says what is on disk, it never follows, activates or changes a
+/// generation. `current` falls back to the highest id when the profile symlink is
+/// missing or cannot be matched, so the answer is always explicit.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GenerationState {
+    pub generations: Vec<GenerationLink>,
+    pub current: Option<u32>,
+}
+
+/// List the generations and resolve the current one without touching anything.
+#[must_use]
+pub fn generation_state(fs: &dyn FsView, profiles: &Path) -> GenerationState {
+    let generations = generation_links(fs, profiles);
+    let current_link = fs.read_link(&profiles.join("home-manager")).ok();
+    let current = current_link
+        .as_ref()
+        .and_then(|target| {
+            generations
+                .iter()
+                .find(|generation| generation.target.as_ref() == Some(target))
+        })
+        .and_then(|generation| generation.id)
+        .or_else(|| {
+            generations
+                .iter()
+                .filter_map(|generation| generation.id)
+                .max()
+        });
+    GenerationState {
+        generations,
+        current,
+    }
+}
+
 #[derive(Debug, Default)]
 struct FlakeFacts {
     home_configurations: bool,

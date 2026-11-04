@@ -238,6 +238,8 @@ pub struct GenerationSummary {
     pub id: Option<u32>,
     pub link: PathBuf,
     pub target: Option<PathBuf>,
+    /// The generation the `home-manager` profile currently points at.
+    pub current: bool,
 }
 
 /// One past edit snapshot, read-only.

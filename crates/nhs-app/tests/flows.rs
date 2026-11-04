@@ -502,6 +502,7 @@ fn history_keeps_generations_and_snapshots_apart_and_read_only() {
             id: Some(3),
             link: PathBuf::from("/home/tester/.local/state/nix/profiles/home-manager-3-link"),
             target: Some(PathBuf::from("/nix/store/abc-home-manager-generation")),
+            current: true,
         }],
         snapshots: vec![SnapshotSummary {
             id: "1700000000-1-000001".to_string(),

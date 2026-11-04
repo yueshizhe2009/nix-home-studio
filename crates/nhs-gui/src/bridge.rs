@@ -133,6 +133,8 @@ pub struct GenerationView {
     pub id: Option<u32>,
     pub link: String,
     pub target: Option<String>,
+    /// True for the generation the `home-manager` profile points at.
+    pub current: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -557,6 +559,7 @@ fn history_view(app: &App) -> Option<HistoryView> {
                     .target
                     .as_ref()
                     .map(|path| path.to_string_lossy().into_owned()),
+                current: generation.current,
             })
             .collect(),
         snapshots: history

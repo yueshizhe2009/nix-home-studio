@@ -224,15 +224,19 @@ impl Session {
     /// Generations and past snapshots, read-only.
     #[must_use]
     pub fn history(&self) -> Event {
-        let discovery = detect(&RealFs, &self.env);
-        let generations = discovery
-            .layout
-            .generations()
+        // Generations belong to the user's profile, not to a particular layout:
+        // a classic or flake configuration still has them. Listing them here
+        // keeps the history screen truthful for every layout.
+        let profiles = self.env.state_home().join("nix").join("profiles");
+        let state = nhs_core::discovery::generation_state(&RealFs, &profiles);
+        let generations = state
+            .generations
             .iter()
             .map(|generation| GenerationSummary {
                 id: generation.id,
                 link: generation.link.clone(),
                 target: generation.target.clone(),
+                current: generation.id == state.current,
             })
             .collect();
         Event::HistoryLoaded {

@@ -680,7 +680,11 @@ function renderHistory(state, panel) {
     ]),
   );
 
-  panel.append(el("h3", { textContent: t("history_generations") }));
+  panel.append(
+    el("h3", {
+      textContent: t("history_generations_count", { n: history.generations.length }),
+    }),
+  );
   if (history.generations.length === 0) {
     panel.append(el("p", { className: "muted", textContent: t("history_no_generations") }));
   } else {
@@ -693,6 +697,7 @@ function renderHistory(state, panel) {
           el("th", { textContent: t("history_col_id"), scope: "col" }),
           el("th", { textContent: t("history_col_link"), scope: "col" }),
           el("th", { textContent: t("history_col_target"), scope: "col" }),
+          el("th", { textContent: t("history_col_current"), scope: "col" }),
         ]),
       ]),
     ]);
@@ -703,6 +708,9 @@ function renderHistory(state, panel) {
           el("td", { textContent: generation.id ?? "—" }),
           el("td", { className: "path nowrap", textContent: generation.link }),
           el("td", { className: "path nowrap", textContent: generation.target || "—" }),
+          el("td", {
+            textContent: generation.current ? t("history_current_yes") : t("history_current_no"),
+          }),
         ]),
       );
     }
@@ -710,7 +718,11 @@ function renderHistory(state, panel) {
     panel.append(table);
   }
 
-  panel.append(el("h3", { textContent: t("history_snapshots") }));
+  panel.append(
+    el("h3", {
+      textContent: t("history_snapshots_count", { n: history.snapshots.length }),
+    }),
+  );
   if (history.snapshots.length === 0) {
     panel.append(el("p", { className: "muted", textContent: t("history_no_snapshots") }));
   } else {

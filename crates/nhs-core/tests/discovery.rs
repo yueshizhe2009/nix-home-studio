@@ -140,3 +140,39 @@ fn discovery_never_guesses_when_two_layouts_exist() {
     assert!(accepted.contains(&"config_home_flake"));
     assert!(accepted.contains(&"nixos"));
 }
+
+/// The profile symlink decides which generation is current; the list itself is
+/// read-only and must contain every link, in id order.
+#[test]
+fn generation_state_marks_the_profile_target_as_current() {
+    let fixture = support::profile_only();
+    let state = nhs_core::discovery::generation_state(
+        &fixture.fs,
+        std::path::Path::new(support::STATE_PROFILES_DIR),
+    );
+    assert_eq!(state.generations.len(), 3);
+    assert_eq!(
+        state.generations.iter().map(|g| g.id).collect::<Vec<_>>(),
+        [Some(1), Some(2), Some(3)]
+    );
+    assert_eq!(state.current, Some(3));
+}
+
+/// Without a profile symlink the most recent generation is reported as current,
+/// and the result says so instead of guessing silently.
+#[test]
+fn generation_state_falls_back_to_the_highest_id() {
+    let mut fixture = support::Fixture::new();
+    for index in 1..=3 {
+        fixture = fixture.symlink(
+            format!("{}/home-manager-{index}-link", support::STATE_PROFILES_DIR),
+            support::generation_path(index),
+        );
+    }
+    let state = nhs_core::discovery::generation_state(
+        &fixture.fs,
+        std::path::Path::new(support::STATE_PROFILES_DIR),
+    );
+    assert_eq!(state.generations.len(), 3);
+    assert_eq!(state.current, Some(3));
+}

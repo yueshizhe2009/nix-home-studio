@@ -104,7 +104,9 @@ sandbox.__renderHistory(
     history: {
       reason_code: "history_read_only",
       reason: "read-only",
-      generations: [],
+      generations: [
+        { id: 3, link: "/home/t/.local/state/nix/profiles/home-manager-3-link", target: "/nix/store/x-home-manager-generation", current: true },
+      ],
       snapshots: [{ id: "S1", created: 0, outcome: "applied", files: 2 }],
     },
   }),
@@ -117,6 +119,19 @@ for (const table of tables) {
   for (const th of findAll(table, (n) => n.tagName === "TH")) {
     if (th.getAttribute("scope") !== "col") fail("history header lacks scope=col");
   }
+}
+
+// The generation list marks the current profile target, and the section
+// headings carry counts so the two lists cannot be confused.
+const historyText = historyPanel.textContent;
+if (!historyText.includes("Home Manager generations (1)")) {
+  fail(`generation section count missing: ${historyText.slice(0, 200)}`);
+}
+if (!historyText.includes("Edit snapshots from this application (1)")) {
+  fail("snapshot section count missing");
+}
+if (!historyText.includes("current")) {
+  fail("current generation is not marked");
 }
 
 console.log("a11y ok: log routing, alert errors, aria-busy, result focus, table semantics");

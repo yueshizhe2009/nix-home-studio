@@ -58,6 +58,8 @@ impl Fixture {
         fs::write(generation.join("activate"), "#!/bin/sh\n").expect("activate");
         std::os::unix::fs::symlink(&generation, profiles.join("home-manager"))
             .expect("profile link");
+        std::os::unix::fs::symlink(&generation, profiles.join("home-manager-3-link"))
+            .expect("numbered link");
         let state = dir.path().join("state");
         fs::create_dir_all(&state).expect("state");
         Self { home, state, dir }
@@ -148,7 +150,10 @@ fn discover_reports_the_layout_and_the_state_directory() {
             generations,
             snapshots,
         } => {
-            assert!(generations.is_empty(), "profile-only owns generations");
+            assert!(
+                generations.is_empty(),
+                "this fixture has no profile, so there is no generation to list"
+            );
             assert!(snapshots.is_empty(), "nothing was applied yet");
         }
         other => panic!("expected HistoryLoaded, got {other:?}"),
@@ -369,5 +374,70 @@ fn validation_uses_the_store_toolchain_when_path_is_empty() {
             assert!(report.success, "the store toolchain must be used");
         }
         other => panic!("validation did not run: {other:?}"),
+    }
+}
+
+/// Generations belong to the user's profile, not to the layout: a classic
+/// configuration still lists them, with the profile target marked current.
+#[test]
+fn history_lists_generations_for_a_classic_layout() {
+    let fixture = Fixture::profile_only();
+    let mut home = fixture.home.clone();
+    // Give the same fixture a classic configuration next to the profile.
+    let config = home.join(".config/home-manager");
+    fs::create_dir_all(&config).expect("config");
+    fs::write(config.join("home.nix"), "{ pkgs, ... }:\n{ }\n").expect("home.nix");
+    home = fixture.home.clone();
+    let _ = home;
+
+    let session = fixture.session();
+    match session.history() {
+        Event::HistoryLoaded { generations, .. } => {
+            assert_eq!(generations.len(), 1, "the generation is listed");
+            assert_eq!(generations.first().and_then(|g| g.id), Some(3));
+            assert!(
+                generations.first().is_some_and(|g| g.current),
+                "the profile target is marked current"
+            );
+        }
+        other => panic!("expected HistoryLoaded, got {other:?}"),
+    }
+}
+
+/// A flake layout still shares the user's profile, so its generations are listed
+/// the same way a classic layout's are.
+#[test]
+fn history_lists_generations_for_a_flake_layout() {
+    let fixture = Fixture::profile_only();
+    let config = fixture.home.join(".config/home-manager");
+    fs::create_dir_all(&config).expect("config");
+    fs::write(
+        config.join("flake.nix"),
+        "{\n  outputs = { self, nixpkgs, home-manager }: {\n    homeConfigurations.tester = home-manager.lib.homeManagerConfiguration { };\n  };\n}\n",
+    )
+    .expect("flake");
+    let env = nhs_core::EnvView {
+        home: fixture.home.clone(),
+        user: Some("tester".to_string()),
+        path_entries: Vec::new(),
+        xdg_config_home: None,
+        xdg_state_home: None,
+        store_root: fixture.dir.path().join("store"),
+    };
+    let session = Session::with_env(env, fixture.state.clone());
+
+    match session.discover() {
+        Event::Discovered(discovery) => {
+            assert_eq!(discovery.layout.kind(), "flake-home");
+        }
+        other => panic!("expected Discovered, got {other:?}"),
+    }
+
+    match session.history() {
+        Event::HistoryLoaded { generations, .. } => {
+            assert_eq!(generations.len(), 1);
+            assert!(generations.first().is_some_and(|g| g.current));
+        }
+        other => panic!("expected HistoryLoaded, got {other:?}"),
     }
 }
