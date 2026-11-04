@@ -389,9 +389,13 @@ fn a_failed_worker_start_leaves_no_stuck_job() -> Result<(), Box<dyn Error>> {
 
 /// A quiet build must still reach the window: one line, then silence, then exit.
 /// Flushing only when the next line arrives would hold that line until the end.
+///
+/// The silence is long and the bound is loose on purpose: a loaded CI runner can
+/// delay the ticker by hundreds of milliseconds, and the property under test is
+/// "delivered while the build runs", not "delivered within 100 ms".
 #[test]
 fn a_quiet_build_still_flushes_within_the_interval() -> Result<(), Box<dyn Error>> {
-    let tool = "#!/bin/sh\necho \"only line\"\nsleep 0.8\nexit 0\n";
+    let tool = "#!/bin/sh\necho \"only line\"\nsleep 3\nexit 0\n";
     let fixture = fixture("worker-quiet", tool)?;
     let seen: Arc<Mutex<Vec<(Instant, Value)>>> = Arc::new(Mutex::new(Vec::new()));
     let sink = Arc::clone(&seen);
@@ -419,12 +423,12 @@ fn a_quiet_build_still_flushes_within_the_interval() -> Result<(), Box<dyn Error
     let (at, state) = first.ok_or("the line never reached the window")?;
     let delay = at.duration_since(started);
     assert!(
-        delay < Duration::from_millis(500),
-        "the line arrived after {delay:?}, which is only at process exit"
+        delay < Duration::from_millis(2000),
+        "the line arrived after {delay:?}; the build runs for 3 s, so this is exit-time delivery"
     );
-    // The build itself ran for ~800 ms, and the notification still says `busy`:
-    // the line was delivered by the ticker while the process was silent, not by
-    // the next line or by the final result.
+    // The build itself runs for 3 s, and the notification still says `busy`: the
+    // line was delivered by the ticker while the process was silent, not by the
+    // next line or by the final result.
     assert!(
         !state["busy"].is_null(),
         "the line must arrive while the job is still running"
