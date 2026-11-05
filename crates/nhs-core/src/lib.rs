@@ -46,6 +46,7 @@ pub mod import;
 pub mod module;
 pub mod proc;
 pub mod revision;
+pub mod rollback;
 pub mod switch;
 pub mod toolchain;
 pub mod validation;
