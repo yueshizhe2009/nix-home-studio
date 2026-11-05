@@ -22,7 +22,31 @@
 mod support;
 
 use std::os::unix::fs::PermissionsExt;
-use std::process::Command;
+use std::path::Path;
+use std::process::{Command, Output};
+use std::thread;
+use std::time::Duration;
+
+/// Run a freshly written script, retrying `ETXTBSY`.
+///
+/// The tests run in parallel: another thread can fork while this script is still
+/// open for writing, and the forked child holds that descriptor until it execs.
+/// Linux refuses to exec the file for that window, which is a test-harness race,
+/// not a product problem.
+fn run_script(script: &Path, args: &[&str]) -> Output {
+    let mut last = None;
+    for _ in 0..50 {
+        match Command::new(script).args(args).output() {
+            Ok(output) => return output,
+            Err(error) if error.kind() == std::io::ErrorKind::ExecutableFileBusy => {
+                last = Some(error);
+                thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => panic!("run {}: {error}", script.display()),
+        }
+    }
+    panic!("run {}: still busy: {last:?}", script.display());
+}
 
 #[test]
 fn fake_toolchain_writes_an_executable_argv_logging_script() {
@@ -53,10 +77,7 @@ fn fake_toolchain_runs_and_records_its_argv() {
     let fake = support::FakeToolchain::new();
     let script = fake.install("home-manager", "generation 7", "a warning", 4);
 
-    let output = Command::new(&script)
-        .args(["generations", "--flake", "/tmp/x#me"])
-        .output()
-        .expect("run fake home-manager");
+    let output = run_script(&script, &["generations", "--flake", "/tmp/x#me"]);
 
     assert_eq!(
         output.status.code(),
@@ -88,11 +109,8 @@ fn fake_toolchain_appends_each_invocation_in_order() {
         vec!["build", "--flake", "/tmp/x#me"],
         vec!["switch", "--flake", "/tmp/x#me"],
     ] {
-        let status = Command::new(&script)
-            .args(&args)
-            .status()
-            .expect("run fake home-manager");
-        assert!(status.success());
+        let output = run_script(&script, &args);
+        assert!(output.status.success());
     }
 
     let log = std::fs::read_to_string(fake.argv_log()).expect("read argv log");
