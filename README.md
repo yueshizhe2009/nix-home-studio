@@ -47,7 +47,33 @@ nix run .#               # the desktop application
 
 The GUI output is a wrapped binary that carries the WebKitGTK, GTK and GSettings
 environment. It is a Linux package for a Nix environment, not an AppImage or a
-distribution `.deb`; a native desktop acceptance run is still required.
+distribution `.deb`.
+
+Install both front ends into the current Nix profile:
+
+```sh
+nix profile install .#nhs-cli   # provides `nhs`
+nix profile install .#nhs-gui   # provides `nhs-gui`, the .desktop entry and icon
+nhs discover --json
+nhs-gui --check
+```
+
+Nix 2.35 and later also accept `nix profile add`; `install` remains the
+compatible spelling. The desktop entry is installed into the profile's `share`
+tree, so the session's `XDG_DATA_DIRS` must include the profile (Nix sessions
+normally do). Running `nhs-gui` directly always works.
+
+### Verified and not verified
+
+| Area | Status |
+| --- | --- |
+| CLI and GUI Nix builds | verified on `x86_64-linux` (host and a clean Ubuntu 24.04 + Nix container) |
+| CLI discovery, GUI `--check` / `--flow-check` | verified |
+| GUI on a native desktop | verified on the CachyOS development desktop; **not** verified on an Ubuntu desktop session |
+| `aarch64-linux` | evaluated by the flake; **not built or tested** |
+| Icon | 32×32 placeholder; production artwork is not done |
+| deb / AppImage / Flatpak | not provided |
+| Rollback UI | deliberately absent |
 
 ## Build and test
 
