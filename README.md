@@ -12,12 +12,13 @@ UI does not pretend otherwise.
 
 ## Current state
 
-The desktop application is implemented through milestone M6.4: discovery,
+The desktop application is implemented through milestone M7.2: discovery,
 catalogue search and selection, plan and per-file diff, review gate,
 asynchronous validation in a scratch copy, build-only apply with snapshots, and
 read-only history. It is built on Tauri 2 + WebKitGTK with the business rules in
 Rust; the iced and Tauri prototypes under `crates/nhs-gui-spike-*` are kept as
-the evidence from the toolkit comparison.
+the evidence from the toolkit comparison. M7.3 adds Nix flake packaging for the
+CLI and the GUI as two separate derivations.
 
 ## Layout
 
@@ -31,6 +32,22 @@ the evidence from the toolkit comparison.
 | `crates/nhs-gui-spike-tauri`, `crates/nhs-gui-spike-iced` | M6.2 prototypes and their measurements |
 | `docs/` | Audit, architecture, implementation plan, GUI decision |
 | `upstream/` | Read-only clones studied for the audit; **not** part of this repository |
+
+## Nix flake
+
+The CLI and GUI are deliberately separate outputs, so a GTK/WebKitGTK problem
+cannot block the command-line delivery:
+
+```sh
+nix build .#nhs-cli     # ./result/bin/nhs
+nix build .#nhs-gui     # ./result/bin/nhs-gui, .desktop and icon
+nix run .#nhs-cli -- discover --json
+nix run .#               # the desktop application
+```
+
+The GUI output is a wrapped binary that carries the WebKitGTK, GTK and GSettings
+environment. It is a Linux package for a Nix environment, not an AppImage or a
+distribution `.deb`; a native desktop acceptance run is still required.
 
 ## Build and test
 
