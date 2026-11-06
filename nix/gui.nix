@@ -30,7 +30,7 @@ in
 # so that WebKitGTK or GTK problems are isolated to this derivation.
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nix-home-studio";
-  version = "0.1.0";
+  version = (lib.importTOML ../crates/nhs-gui/Cargo.toml).package.version;
 
   inherit src;
 
@@ -72,6 +72,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/yueshizhe2009/nix-home-studio";
     license = lib.licenses.asl20;
     mainProgram = "nhs-gui";
-    platforms = lib.platforms.linux;
+    platforms = [ "x86_64-linux" ];
   };
 })

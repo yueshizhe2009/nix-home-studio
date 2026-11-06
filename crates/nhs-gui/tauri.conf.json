@@ -1,6 +1,5 @@
 {
   "productName": "Nix Home Studio",
-  "version": "0.1.0",
   "identifier": "dev.local.nhs.studio",
   "build": {
     "frontendDist": "dist"

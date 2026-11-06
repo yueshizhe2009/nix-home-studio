@@ -9,7 +9,7 @@
 # delivery. The root workspace lock is the CLI's lock.
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "nhs-cli";
-  version = "0.1.0";
+  version = (lib.importTOML ../Cargo.toml).workspace.package.version;
 
   inherit src;
 
@@ -25,6 +25,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
     homepage = "https://github.com/yueshizhe2009/nix-home-studio";
     license = lib.licenses.asl20;
     mainProgram = "nhs";
-    platforms = lib.platforms.linux;
+    platforms = [ "x86_64-linux" ];
   };
 })

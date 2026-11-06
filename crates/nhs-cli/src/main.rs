@@ -69,6 +69,7 @@ usage:
   nhs validate [same flags as plan]
   nhs apply    [--build-only] [same flags as plan]
   nhs apply    --switch [--yes]        # refused in this version
+  nhs --version
   nhs search   <query> [--full] [--json] [--platform <tag>] [--page N] [--per-page N]
                [--include-unfree] [--include-broken] [--include-nixos-only]
                [--license-allow a,b] [--license-deny a,b]
@@ -93,6 +94,15 @@ fn run(args: &[String]) -> Result<app::Exit, app::Failure> {
     };
     let rest: &[String] = args.get(1..).unwrap_or(&[]);
 
+    if matches!(command.as_str(), "--version" | "-V") {
+        if !rest.is_empty() {
+            return Err(app::Failure::usage(format!(
+                "`{command}` takes no arguments\n{USAGE}"
+            )));
+        }
+        println!("nhs {}", env!("CARGO_PKG_VERSION"));
+        return Ok(app::Exit::Ok);
+    }
     if matches!(command.as_str(), "-h" | "--help" | "help") {
         println!("{USAGE}");
         return Ok(app::Exit::Ok);

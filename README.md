@@ -7,8 +7,9 @@ afterwards.
 
 **What it does not do:** it never activates a configuration (`home-manager
 switch`), never touches NixOS system configuration, and does not roll back. The
-history screen is read-only because the core has no rollback implementation — the
-UI does not pretend otherwise.
+core can describe the one-step rollback that Home Manager supports, but nothing
+in this application executes it, and the history screen offers no rollback
+control.
 
 ## Current state
 
@@ -55,8 +56,13 @@ Install both front ends into the current Nix profile:
 nix profile install .#nhs-cli   # provides `nhs`
 nix profile install .#nhs-gui   # provides `nhs-gui`, the .desktop entry and icon
 nhs discover --json
+nhs --version
 nhs-gui --check
+nhs-gui --version
 ```
+
+Both front ends accept `--help`; the GUI handles it, `--check` and `--version`
+before GTK is initialised, so they also work without a display.
 
 Nix 2.35 and later also accept `nix profile add`; `install` remains the
 compatible spelling. The desktop entry is installed into the profile's `share`

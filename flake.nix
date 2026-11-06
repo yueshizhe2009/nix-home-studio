@@ -61,6 +61,21 @@
         };
       });
 
+      checks = forAllSystems (system: {
+        # Release metadata must not claim platforms that have not been built.
+        metadata = nixpkgs.legacyPackages.${system}.runCommand "nhs-metadata-check" {
+          cliPlatforms = builtins.toJSON self.packages.${system}.nhs-cli.meta.platforms;
+          guiPlatforms = builtins.toJSON self.packages.${system}.nhs-gui.meta.platforms;
+          cliVersion = self.packages.${system}.nhs-cli.version;
+          guiVersion = self.packages.${system}.nhs-gui.version;
+        } ''
+          test "$cliPlatforms" = '["x86_64-linux"]'
+          test "$guiPlatforms" = '["x86_64-linux"]'
+          test "$cliVersion" = "$guiVersion"
+          touch $out
+        '';
+      });
+
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
     };
 }
