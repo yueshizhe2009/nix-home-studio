@@ -20,7 +20,9 @@ snapshots, and read-only history. It is built on Tauri 2 + WebKitGTK with the
 business rules in Rust; the iced and Tauri prototypes under
 `crates/nhs-gui-spike-*` are kept as the evidence from the toolkit comparison.
 M7.3 added separate Nix derivations for the CLI and GUI; M7.4.1 tightened the
-command-line interfaces and restricted package metadata to `x86_64-linux`.
+command-line interfaces and restricted package metadata to `x86_64-linux`. The
+M7 E2E close-out adds a clean-HOME creation hint; its isolated E2E harness is
+preflight-only and E2E safety gate 8 remains open.
 
 ## Layout
 
@@ -82,6 +84,7 @@ profile (Nix sessions normally do). Running `nhs-gui` directly always works.
 | Icon | 32×32 placeholder; production artwork is not done |
 | deb / AppImage / Flatpak | not provided |
 | Rollback UI / execution | deliberately absent; History is read-only |
+| End-to-end activation | not run; the product never activates, and the isolated E2E script is preflight-only |
 | GitHub Actions Nix builds | not run; CI covers Rust/frontend/safety gates, while Nix builds are local/container evidence |
 | Screen-reader speech and full scaling matrix | not fully verified; see `docs/m66-accessibility-report.md` |
 
@@ -112,6 +115,18 @@ Everything in one place:
 ```sh
 sh crates/nhs-gui/scripts/check-all.sh
 ```
+
+## Isolated E2E harness
+
+The test-only Home Manager harness is preflight-only by default:
+
+```sh
+scripts/e2e-home-manager.sh --preflight
+```
+
+It refuses `--execute` unless `NHS_E2E_ALLOW_ACTIVATION=1` is set after explicit
+authorization, and it never runs `home-manager switch` in preflight mode. That
+activation run has not been performed in this candidate.
 
 ## Safety boundaries
 

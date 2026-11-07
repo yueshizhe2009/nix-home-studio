@@ -253,6 +253,7 @@ fn print_human(discovery: &nhs_core::Discovery, toolchain: &nhs_core::Toolchain)
         }
         Layout::Unknown { reason } => {
             println!("  reason: {reason}");
+            println!("  hint: {}", nhs_core::flow::NO_CONFIG_HINT);
         }
     }
 

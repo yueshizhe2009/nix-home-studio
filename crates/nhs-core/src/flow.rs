@@ -18,6 +18,10 @@ use crate::fs::WriteFs;
 use crate::import::{inject_sidecar, ImportError};
 use crate::module::{self, ModuleError, ModuleSpec, Setting, Style, Target};
 
+/// Shown when discovery found no Home Manager configuration. It is a hint, not
+/// an action: nothing here creates a file.
+pub const NO_CONFIG_HINT: &str = "create ~/.config/home-manager/home.nix (classic) or ~/.config/home-manager/flake.nix (flake), or run `home-manager init` to generate a starter configuration";
+
 /// What the user picked.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Selection {
@@ -86,7 +90,11 @@ impl std::fmt::Display for PrepareError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::UnsupportedLayout { kind, reason } => {
-                write!(f, "cannot plan a `{kind}` configuration: {reason}")
+                write!(f, "cannot plan a `{kind}` configuration: {reason}")?;
+                if kind == "unknown" && reason.contains("no Home Manager configuration found") {
+                    write!(f, "\nhint: {NO_CONFIG_HINT}")?;
+                }
+                Ok(())
             }
             Self::ModuleOutsideTree { module, root } => write!(
                 f,

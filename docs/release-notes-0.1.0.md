@@ -1,8 +1,8 @@
 # Nix Home Studio 0.1.0 — technical preview
 
-Status: **release-candidate notes; not published**. Application code commit:
-`6f0e5c0`; the release notes and acceptance records are documentation on top of
-that code. Remote baseline: `614f4ee`.
+Status: **release-candidate notes; not published**. Application code baseline:
+`6f0e5c0`; the WP1/WP4 close-out is a follow-up commit on top of it. Remote
+baseline: `f977b5a`; the close-out has not been pushed.
 
 ## Highlights
 
@@ -68,15 +68,22 @@ standalone binary bundle.
 - The current GitHub Actions workflow runs Rust/frontend/safety gates but does
   not build the Nix flake outputs. Nix build evidence is local/container
   evidence, not CI evidence.
+- The isolated M7 end-to-end activation run has **not** been executed; only the
+  script's isolation preflight exists. No `home-manager switch` or rollback is
+  claimed.
 
 ## Verification status for this candidate
 
 - M7.4.1 local gate: **352 tests passed**; CLI and GUI Nix builds passed;
   `nix flake check` passed with the existing app-metadata and formatter-alias
   warnings.
+- WP1/WP4 close-out: **354 tests passed**; the Nix CLI was rebuilt and the
+  clean-HOME hint was checked. No activation was run.
 - M7.4.2: fresh temporary HOME/XDG roots and Nix profile; CLI/GUI install and
   command checks passed; `--flow-check` completed 11 steps; packaged GUI
   startup smoke test passed. See `docs/m742-clean-install-acceptance.md`.
+- M7 E2E: **not run**. `scripts/e2e-home-manager.sh` is preflight-only in this
+  candidate; gate 8 remains open.
 - Latest remote CI run at the time of writing is on `614f4ee`, not this local
   candidate. It passed the 346-test gate. The `6f0e5c0` candidate has not yet
   been pushed, so it has no remote CI result yet.
