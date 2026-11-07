@@ -13,13 +13,14 @@ control.
 
 ## Current state
 
-The desktop application is implemented through milestone M7.2: discovery,
-catalogue search and selection, plan and per-file diff, review gate,
-asynchronous validation in a scratch copy, build-only apply with snapshots, and
-read-only history. It is built on Tauri 2 + WebKitGTK with the business rules in
-Rust; the iced and Tauri prototypes under `crates/nhs-gui-spike-*` are kept as
-the evidence from the toolkit comparison. M7.3 adds Nix flake packaging for the
-CLI and the GUI as two separate derivations.
+The application is implemented through M7.4.3 as a 0.1.0 technical-preview
+candidate: discovery, catalogue search and selection, plan and per-file diff,
+review gate, asynchronous validation in a scratch copy, build-only apply with
+snapshots, and read-only history. It is built on Tauri 2 + WebKitGTK with the
+business rules in Rust; the iced and Tauri prototypes under
+`crates/nhs-gui-spike-*` are kept as the evidence from the toolkit comparison.
+M7.3 added separate Nix derivations for the CLI and GUI; M7.4.1 tightened the
+command-line interfaces and restricted package metadata to `x86_64-linux`.
 
 ## Layout
 
@@ -31,7 +32,7 @@ CLI and the GUI as two separate derivations.
 | `crates/nhs-cli` | Headless front end used by the test suite and by `nhs discover` |
 | `crates/nhs-gui` | The desktop application (own Cargo workspace) |
 | `crates/nhs-gui-spike-tauri`, `crates/nhs-gui-spike-iced` | M6.2 prototypes and their measurements |
-| `docs/` | Audit, architecture, implementation plan, GUI decision |
+| `docs/` | Audit, architecture, implementation plan, GUI decision and release evidence |
 | `upstream/` | Read-only clones studied for the audit; **not** part of this repository |
 
 ## Nix flake
@@ -53,8 +54,8 @@ distribution `.deb`.
 Install both front ends into the current Nix profile:
 
 ```sh
-nix profile install .#nhs-cli   # provides `nhs`
-nix profile install .#nhs-gui   # provides `nhs-gui`, the .desktop entry and icon
+nix profile add .#nhs-cli       # Nix 2.35+; older Nix: nix profile install .#nhs-cli
+nix profile add .#nhs-gui       # provides `nhs-gui`, the .desktop entry and icon
 nhs discover --json
 nhs --version
 nhs-gui --check
@@ -64,22 +65,25 @@ nhs-gui --version
 Both front ends accept `--help`; the GUI handles it, `--check` and `--version`
 before GTK is initialised, so they also work without a display.
 
-Nix 2.35 and later also accept `nix profile add`; `install` remains the
-compatible spelling. The desktop entry is installed into the profile's `share`
-tree, so the session's `XDG_DATA_DIRS` must include the profile (Nix sessions
-normally do). Running `nhs-gui` directly always works.
+`nix profile add` is the current spelling on Nix 2.35 and later. Older Nix
+releases use `nix profile install`; on 2.35+ that spelling still works but prints
+a deprecation hint. The desktop entry is installed into the
+profile's `share` tree, so the session's `XDG_DATA_DIRS` must include the
+profile (Nix sessions normally do). Running `nhs-gui` directly always works.
 
 ### Verified and not verified
 
 | Area | Status |
 | --- | --- |
 | CLI and GUI Nix builds | verified on `x86_64-linux` (host and a clean Ubuntu 24.04 + Nix container) |
-| CLI discovery, GUI `--check` / `--flow-check` | verified |
+| CLI discovery/version/help, GUI `--check` / `--flow-check` | verified, including fresh temporary HOME/profile acceptance |
 | GUI on a native desktop | verified on the CachyOS development desktop; **not** verified on an Ubuntu desktop session |
-| `aarch64-linux` | evaluated by the flake; **not built or tested** |
+| `aarch64-linux` | not supported in 0.1.0; flake evaluation only, **not built or tested** |
 | Icon | 32×32 placeholder; production artwork is not done |
 | deb / AppImage / Flatpak | not provided |
-| Rollback UI | deliberately absent |
+| Rollback UI / execution | deliberately absent; History is read-only |
+| GitHub Actions Nix builds | not run; CI covers Rust/frontend/safety gates, while Nix builds are local/container evidence |
+| Screen-reader speech and full scaling matrix | not fully verified; see `docs/m66-accessibility-report.md` |
 
 ## Build and test
 
