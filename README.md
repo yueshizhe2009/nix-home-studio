@@ -21,8 +21,10 @@ business rules in Rust; the iced and Tauri prototypes under
 `crates/nhs-gui-spike-*` are kept as the evidence from the toolkit comparison.
 M7.3 added separate Nix derivations for the CLI and GUI; M7.4.1 tightened the
 command-line interfaces and restricted package metadata to `x86_64-linux`. The
-M7 E2E close-out adds a clean-HOME creation hint; its isolated E2E harness is
-preflight-only and E2E safety gate 8 remains open.
+M7 E2E close-out adds a clean-HOME creation hint; its isolated E2E harness ran
+build → switch → package install → rollback once in a disposable sandbox on
+2026-11-08. The product still never activates a configuration; Gate 8 now has
+test-only evidence.
 
 ## Layout
 
@@ -84,7 +86,7 @@ profile (Nix sessions normally do). Running `nhs-gui` directly always works.
 | Icon | 32×32 placeholder; production artwork is not done |
 | deb / AppImage / Flatpak | not provided |
 | Rollback UI / execution | deliberately absent; History is read-only |
-| End-to-end activation | not run; the product never activates, and the isolated E2E script is preflight-only |
+| End-to-end activation | product never activates; the isolated test-only harness ran build → switch → install → rollback in a sandbox on 2026-11-08 |
 | GitHub Actions Nix builds | not run; CI covers Rust/frontend/safety gates, while Nix builds are local/container evidence |
 | Screen-reader speech and full scaling matrix | not fully verified; see `docs/m66-accessibility-report.md` |
 
@@ -118,15 +120,42 @@ sh crates/nhs-gui/scripts/check-all.sh
 
 ## Isolated E2E harness
 
-The test-only Home Manager harness is preflight-only by default:
+The test-only Home Manager harness is preflight-only by default. It requires
+explicit store paths; it does not search `PATH` or `NIX_PATH`:
 
 ```sh
+NHS_E2E_HM=/nix/store/.../bin/home-manager \
+NHS_E2E_NIXPKGS=/nix/store/...-source \
 scripts/e2e-home-manager.sh --preflight
 ```
 
-It refuses `--execute` unless `NHS_E2E_ALLOW_ACTIVATION=1` is set after explicit
-authorization, and it never runs `home-manager switch` in preflight mode. That
-activation run has not been performed in this candidate.
+The sandbox is a `0700` tree under `/var/tmp`. The child gets its own `HOME`,
+all `XDG_*` directories, `TMPDIR`, and an empty private `XDG_RUNTIME_DIR` whose
+D-Bus address points at a non-existent socket. The Home Manager profile
+directory is pre-created so Home Manager cannot fall back to
+`/nix/var/nix/profiles/per-user`; the fallback for the fake E2E user is verified
+absent before every run. `NIX_REMOTE=daemon` and `NIX_PATH` are set explicitly;
+systemd service activation is disabled in the generated configuration; and
+`home-manager` runs in its own session/process group so a timeout or signal
+stops the whole tree before the sandbox is removed. The harness snapshots the
+real Home Manager profile, configuration, app state and Home Manager data/cache
+before and after activation.
+
+`NHS_E2E_STRICT_ENV=1` turns any inherited `NIX_*`/`HOME_MANAGER_*` state
+variable into an error instead of clearing it. `NHS_E2E_ALLOW_ACTIVATION=1` is
+still required for `--execute`. One authorized run on 2026-11-08 completed
+build → switch → install `hello` → switch → rollback in
+`/var/tmp/nhs-e2e.d45fGg`; the real profile/config/app state were unchanged and
+no systemd/D-Bus command appeared in the logs. The product itself still never
+activates; Gate 8 now has test-only evidence.
+
+The isolation rules have their own suite, also part of
+`crates/nhs-gui/scripts/check-all.sh`:
+
+```sh
+sh scripts/test-e2e-isolation.sh
+```
+
 
 ## Safety boundaries
 

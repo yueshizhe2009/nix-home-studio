@@ -506,7 +506,7 @@ Implementation note: `crates/nhs-gui/scripts/check-i18n.js` no longer keeps a ha
 | M6.4.5 | **done 2026-11-01, awaiting review.** `nhs-gui --flow-check` runs the whole chain through the same `Service`/adapter against a temporary HOME, a fake `home-manager` and a temp store, prints an 11-entry JSON transcript, and deletes the scratch tree. `tests/flowcheck.rs` runs the binary with the caller's `HOME` pointed at an empty directory and asserts: exit 0, all 11 steps, validation true, apply `applied`, 2 files written, snapshot id present, one history snapshot, **the caller's HOME and state/config directories untouched**, and the scratch tree gone. The write guard now treats `flowcheck.rs` as the single explicit exception (it must build a scratch HOME), with stricter rules: writes only, no `Command::new` anywhere, and the runtime isolation test as the real proof; `check-all.sh` enforces both the exception and the rule. Live keyboard run (XTEST + AT-SPI) completed discover → catalog → plan → validate → confirm → apply → history: Confirm is disabled after the write (`already_applied` in the footer), the scratch tree holds the module, the injected import, one snapshot and one backup, and History lists `applied · 2 files` with no rollback control. A failed write is deterministic at the service level: with the config directory read-only the apply ends `failed`, Core records the attempt as `outcome: failed` with its reason, restores `home.nix`, and leaves no module behind (`a_failed_write_is_rolled_back_and_recorded`); the live attempt to reproduce it by chmod was racy and is not claimed as evidence. No activation path exists in the GUI source (only `switch` data fields and refused copy), `state.switch.available` is false, and the real `~/.config/home-manager` and state directory remain absent. Two display defects found by looking: history's snapshot id wrapped to one character per line (fixed with `nowrap`), and entering History from the sidebar after a restart showed `Loading…` because navigation did not request the report (fixed: the History step now dispatches `history`). `check-all.sh` passes with **331 tests** (workspace 309, gui 22).
 | M6.5 | **done 2026-11-03, awaiting review.** Real-environment acceptance is recorded in `docs/m65-real-environment.md`: real host read-only (profile-only, 3 generations, store-only toolchain, 78–89 ms discovery, 741–920 ms start-up, 230–248 MiB PSS, zero changes to `~/.config/home-manager` or the state directory, plus the app-owned WebKit data directory named explicitly), and a real-toolchain flow in a throw-away HOME (classic layout, `jq` selected, real `home-manager build` 27 s, apply writing module + import + one `applied` snapshot, history read-back, second confirmation refused). **Defect found and fixed:** validation re-resolved `home-manager` through `PATH`, so a store-only install — this host — could never validate (`home-manager was not found on PATH`). Fixed in core and adapter: `HmInvocation::binary()`, the store scan also runs when no generation is linked, and `Session::validate` prepends the resolved binary's directory for the runner (the allowlist check still applies). Regression test `validation_uses_the_store_toolchain_when_path_is_empty` failed before the fix and passes after. Also fixed a stale success message that still claimed review/apply arrived “in the next stage”. Keyboard injection was unavailable in this session (X focus present, web view received none), so B1 was driven through AT-SPI actions; A used real typing earlier. `check-all.sh` passes with **335 tests**. |
 | M6.6 | **in progress 2026-11-04: audit + fixes done, awaiting review.** Audit in `docs/m66-accessibility-audit.md`, report in `docs/m66-accessibility-report.md`. Six GUI defects found and fixed with tests: the Build-log screen routed to the wrong renderer (missing heading, status and applied-snapshot message; focus lost after apply); errors drawn but not announced (`role=alert`, exposed as AT-SPI `notification`); validation completion not announced (result now takes focus); step changes left focus on the nav button (heading now focused); no `aria-busy` while running; tables unnamed and headers without scope. Also fixed `el()` writing `aria-label` as a JS property, which meant the search box never had its label. Verified on the real desktop: keyboard-only walk through all screens, heading focus on step change, applied message present, table named. Not verified: screen-reader speech (no GNOME Orca or synthesizer installed), 125%/150% scaling (would change the desktop scale), and 200% on a real HiDPI panel (2× renders correctly, but this 1440×900 panel clips a 2360×1520 physical window). Two false negatives from earlier harness bugs (ancestor focus node, window on another workspace) are documented so they are not read as product defects. `check-all.sh` passes with 335 tests. |
-| M7 E2E close-out (WP1/WP4) | **done 2026-11-07, awaiting review.** WP1: `nhs discover` on an empty HOME exits 0 and prints a creation hint (`home.nix` / `flake.nix` / `home-manager init`); `nhs plan` keeps its refusal semantics and exit 3, and prints the same hint. Tests cover empty and existing configurations. WP4: the M7 plan now records that only `switch --rollback` exists (no `--switch-generation`), that rollback UI/actions are deferred, that the generation cross-check is deferred (WP3), and that E2E gate 8 remains open. `scripts/e2e-home-manager.sh` is preflight-only; it refuses execution without `NHS_E2E_ALLOW_ACTIVATION=1` and has not run any switch or rollback. No real HM change, no GC, no push. Gate: **354 tests**. |
+| M7 E2E close-out (WP1/WP4) | **done 2026-11-07, E2E evidence added 2026-11-08.** WP1: `nhs discover` on an empty HOME exits 0 and prints a creation hint (`home.nix` / `flake.nix` / `home-manager init`); `nhs plan` keeps its refusal semantics and exit 3, and prints the same hint. Tests cover empty, existing, and ambiguous configurations. WP4: the M7 plan now records that only `switch --rollback` exists (no `--switch-generation`), that rollback UI/actions are deferred, that the generation cross-check is deferred (WP3), and that E2E Gate 8 has test-only evidence. After explicit authorization, one isolated sandbox run completed build → switch → install `hello` → switch → rollback in `/var/tmp/nhs-e2e.d45fGg`; real HM profile/config/app state stayed unchanged and no systemd/D-Bus command ran. The product itself still never activates. Gate: **355 tests**; test-only Gate 8 evidence recorded. |
 | M7.4.3 | **done 2026-11-07, accepted and pushed as `f977b5a`.** Added `docs/release-notes-0.1.0.md` with installation, safety boundaries, a truthful platform/support matrix, known limitations and candidate verification evidence; updated README to describe the M7.4.2 candidate and recommend `nix profile add`. Explicitly distinguishes local/Ubuntu-container Nix build evidence from GitHub CI, whose workflow does not build the flake. GitHub Actions run 42367587794 passed in 2m1s; the local gate was 352 tests. No release tag. |
 | M7.4.2 | **done 2026-11-07, clean-profile acceptance.** Installed the already-built M7.4.1 CLI/GUI outputs into a fresh temporary Nix profile with isolated HOME/XDG roots under `/var/tmp`; verified CLI help/version/discovery, GUI help/version/strict argument rejection/`--check`/`--flow-check` (11 steps, 2 scratch files, 1 snapshot), native Wayland GUI startup, packaging metadata and History read-only/no-button contract. Real HM profile remains `home-manager-3-link`; real config and app state remain absent; no GC, push or tag movement. Reused cached store outputs because `/home` had only 1.6 GiB free; no clean-store rebuild. Manual visual navigation of History was not repeated; see `docs/m742-clean-install-acceptance.md`. |
 | M7.4.1 | **done 2026-11-07, accepted; included in `f977b5a`.** Delivery fixes from the M7.4.0 audit, no feature work. The GUI now parses exactly one option before GTK: `--help`/`-h` and `--version`/`-V` work without a display, unknown or extra arguments exit 2, and `--check --bogus` no longer prints JSON. The CLI accepts `--version`/`-V` and refuses extra arguments. Package versions are no longer duplicated: `nix/cli.nix` imports the root `Cargo.toml` version and `nix/gui.nix` imports the GUI manifest; `tauri.conf.json` no longer carries a version. Both packages declare `platforms = [ "x86_64-linux" ]`, and `checks.<system>.metadata` asserts the metadata plus equal CLI/GUI versions. `check-packaging.js` guards Cargo/Tauri/Nix drift and the platform declaration. README now says the core can describe the one-step rollback but never executes it and the History screen has no control. Tests added: GUI argument handling (4) and CLI version (2). Nix CLI and GUI builds pass; the Nix GUI was checked for `--help`, `--version`, bad arguments, real-HOME `--check` and scratch `--flow-check`. `nix flake check` passes. Gate: **352 tests**. No rollback UI, no `nix-env`, no real HM change, no GC, no push. |
@@ -531,12 +531,14 @@ Implementation note: `crates/nhs-gui/scripts/check-i18n.js` no longer keeps a ha
 
 ## M7 — Generations, rollback, and a disposable-environment end-to-end run
 
-**Status (2026-11-07).** M7.1 generation listing, M7.2 rollback feasibility,
+**Status (2026-11-08).** M7.1 generation listing, M7.2 rollback feasibility,
 M7.3 packaging and M7.4 delivery/release preparation are done. WP1 (portability
-hint) and WP4 (this plan correction) are done. The isolated E2E script exists as
-**preflight only**; WP2 activation is not authorized and has not been run. WP3
-generation cross-check is deferred. Rollback UI/actions remain deliberately out
-of scope.
+hint) and WP4 (this plan correction) are done. The isolated E2E script's
+preflight and negative tests pass; after explicit authorization, one sandbox
+run completed build → switch → install → rollback and recorded Gate 8
+test-only evidence. WP2 activation is not a product feature and remains
+unauthorized for the real HOME. WP3 generation cross-check is deferred.
+Rollback UI/actions remain deliberately out of scope.
 
 **Scope.** Real Home Manager generation listing and a test-only disposable-
 environment E2E; offline packaging. Product activation and rollback execution
@@ -556,8 +558,18 @@ are not in scope.
   is headless/Xvfb evidence, not a native Ubuntu desktop verification.
 - `scripts/e2e-home-manager.sh` is the isolated E2E harness. It performs
   preflight only by default and refuses execution unless
-  `NHS_E2E_ALLOW_ACTIVATION=1` is set after explicit authorization. No
-  `home-manager switch` or rollback has been run in this phase.
+  `NHS_E2E_ALLOW_ACTIVATION=1` is set after explicit authorization. One
+  authorized sandbox run on 2026-11-08 performed build → switch → install
+  `hello` → switch → rollback in `/var/tmp/nhs-e2e.d45fGg`; the real HM
+  profile/config/app state were unchanged and no systemd/D-Bus command ran.
+  The product itself still has no activation path. The WP2 review fixes isolate
+  every XDG directory and `TMPDIR`, pre-create and verify the Home Manager
+  profile directory, clear the caller's `NIX_STATE_DIR` (the Nix daemon socket
+  is derived from it) while setting `NIX_REMOTE`/`NIX_PATH` explicitly with
+  `env -i`, verify the fallback profile is absent, disable systemd service
+  activation, run the child in its own process group, and snapshot the real
+  profile/config/app state. `scripts/test-e2e-isolation.sh` covers the negative
+  cases (69 cases).
 
 **Acceptance tests**
 - `listing_generations_from_profile_symlinks_matches_home_manager_output` —
@@ -568,15 +580,18 @@ are not in scope.
   experiment only.
 - `snapshot_revert_and_generation_rollback_are_distinct_actions` — **deferred**
   with the rollback UI.
-- E2E (test-only, never CI-with-sudo): **open** — the script's isolation
-  preflight is written, but no package install → switch → rollback run has been
-  authorized or executed.
+- E2E (test-only, never CI-with-sudo): **done isolated 2026-11-08** — build →
+  switch → install `hello` → switch → rollback ran in
+  `/var/tmp/nhs-e2e.d45fGg`; real profile/config/app state unchanged; no
+  systemd/D-Bus command. The product itself still does not activate.
 - Portability (WP1, done): on a clean HOME, `nhs discover` exits 0 and prints a
   creation hint; `nhs plan` keeps its refusal semantics, exits 3 and prints the
   same hint. Tests cover both empty and existing configurations.
 
-**Evidence:** M7.2 feasibility transcript only (`docs/m72-rollback-isolation.md`);
-there is **no** M7 E2E activation transcript. Gate 8 remains open.
+**Evidence:** M7.2 feasibility transcript (`docs/m72-rollback-isolation.md`);
+`docs/m7-wp2-isolation-hardening.md` records the WP2 review fixes, the 69
+isolation tests, and the authorized 2026-11-08 sandbox build/switch/rollback
+transcript. Gate 8 has test-only evidence; the product still never activates.
 
 ---
 
@@ -609,9 +624,11 @@ there is **no** M7 E2E activation transcript. Gate 8 remains open.
 5. G5 hash guard + backup present for every write.
 6. G6 every written file re-parses.
 7. G7 no test in the default suite activates anything.
-8. **M7 E2E evidence recorded, including a rollback — OPEN.** The isolated
-   script's preflight is written, but no real `switch`/rollback has been run.
-   Do not release as if this gate is green.
+8. **M7 E2E evidence recorded, including a rollback — PASS (test-only,
+   2026-11-08).** Isolated sandbox `/var/tmp/nhs-e2e.d45fGg`: build → switch →
+   install `hello` → switch → rollback; real profile/config/app state unchanged,
+   no systemd/D-Bus command. The product itself still never activates. Do not
+   describe the product as supporting activation or rollback.
 
 ## Recommended minimal viable version
 

@@ -26,6 +26,9 @@ node crates/nhs-gui/scripts/check-apply.js
 node crates/nhs-gui/scripts/check-a11y.js
 node crates/nhs-gui/scripts/check-packaging.js
 
+echo "== e2e isolation =="
+sh scripts/test-e2e-isolation.sh
+
 echo "== gui crate =="
 CARGO_TARGET_DIR="$GUI_TARGET" cargo $TOOLCHAIN test --manifest-path crates/nhs-gui/Cargo.toml
 CARGO_TARGET_DIR="$GUI_TARGET" cargo $TOOLCHAIN clippy --manifest-path crates/nhs-gui/Cargo.toml --all-targets -- -D warnings

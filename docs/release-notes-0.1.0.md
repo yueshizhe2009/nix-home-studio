@@ -68,25 +68,41 @@ standalone binary bundle.
 - The current GitHub Actions workflow runs Rust/frontend/safety gates but does
   not build the Nix flake outputs. Nix build evidence is local/container
   evidence, not CI evidence.
-- The isolated M7 end-to-end activation run has **not** been executed; only the
-  script's isolation preflight exists. No `home-manager switch` or rollback is
-  claimed.
+- The isolated M7 end-to-end activation run is test-only evidence, not a
+  product capability. The harness deliberately disables user service
+  activation and does not validate systemd/D-Bus service activation.
 
 ## Verification status for this candidate
 
 - M7.4.1 local gate: **352 tests passed**; CLI and GUI Nix builds passed;
   `nix flake check` passed with the existing app-metadata and formatter-alias
   warnings.
-- WP1/WP4 close-out: **354 tests passed**; the Nix CLI was rebuilt and the
+- WP1/WP4 close-out: **355 tests passed**; the Nix CLI was rebuilt and the
   clean-HOME hint was checked. No activation was run.
+- WP2 isolation hardening (post-review): `scripts/test-e2e-isolation.sh`
+  **69 tests passed** (negative environment, symlink/path escape, missing
+  directories, timeout, SIGTERM, cleanup, real-environment snapshots);
+  `shellcheck` 0.11.0, `sh -n`, `bash -n`, `git diff --check` and the full
+  `check-all.sh` gate passed. CLI and GUI Nix outputs were rebuilt. No
+  `--execute`, switch, rollback, D-Bus/systemd access, GC, tag move or push
+  in the preflight phase; the separately authorized 2026-11-08 sandbox
+  activation is recorded above.
 - M7.4.2: fresh temporary HOME/XDG roots and Nix profile; CLI/GUI install and
   command checks passed; `--flow-check` completed 11 steps; packaged GUI
   startup smoke test passed. See `docs/m742-clean-install-acceptance.md`.
-- M7 E2E: **not run**. `scripts/e2e-home-manager.sh` is preflight-only in this
-  candidate; gate 8 remains open.
-- Latest remote CI run at the time of writing is on `614f4ee`, not this local
-  candidate. It passed the 346-test gate. The `6f0e5c0` candidate has not yet
-  been pushed, so it has no remote CI result yet.
+- M7 E2E: **run once in an isolated sandbox on 2026-11-08** after explicit
+  authorization. `scripts/e2e-home-manager.sh --execute` completed build →
+  switch → install `hello` → switch → rollback in `/var/tmp/nhs-e2e.d45fGg`;
+  the final profile was `home-manager-1-link`, `hello` was absent after
+  rollback, the real profile/config/app state and HM data were unchanged, and
+  no systemd/D-Bus command appeared in the logs. The product itself still never
+  activates; Gate 8 now has test-only evidence. See
+  `docs/m7-wp2-isolation-hardening.md`.
+- Remote CI: `f977b5a` is the current remote baseline; GitHub Actions run
+  `42367587794` passed in 2m1s with the 352-test gate. Local `8903314`
+  (WP1/WP4 plus the initial WP2 preflight) and the WP2 hardening candidate had
+  no remote CI result when this document was prepared; the push result is
+  reported separately.
 
 The existing non-blocking flake warnings (missing app `meta` and the deprecated
 `nixfmt-rfc-style` alias) are known P3 items, not claims of a failed build.

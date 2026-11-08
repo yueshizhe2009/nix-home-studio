@@ -71,3 +71,38 @@ fn an_existing_configuration_does_not_get_the_creation_hint() {
     assert!(output.contains("layout: classic-home"), "{output}");
     assert!(!output.contains("hint:"), "{output}");
 }
+
+#[test]
+fn an_ambiguous_configuration_does_not_get_the_creation_hint() {
+    let (_dir, home) = home();
+    let config = home.join(".config/home-manager");
+    fs::create_dir_all(&config).expect("create config dir");
+    fs::write(
+        config.join("home.nix"),
+        "{ ... }:\n{\n  home.stateVersion = \"24.05\";\n}\n",
+    )
+    .expect("write home.nix");
+    fs::write(
+        config.join("flake.nix"),
+        r#"{
+  outputs = { ... }: {
+    homeConfigurations."tester" = { ... };
+  };
+}
+"#,
+    )
+    .expect("write flake.nix");
+
+    let discover = run(&home, &["discover"]);
+    assert!(discover.status.success());
+    let output = String::from_utf8_lossy(&discover.stdout);
+    assert!(output.contains("layout: unknown"), "{output}");
+    assert!(output.contains("refusing to guess"), "{output}");
+    assert!(!output.contains("hint:"), "{output}");
+
+    let plan = run(&home, &["plan", "--packages", "hello"]);
+    assert_eq!(plan.status.code(), Some(3));
+    let error = String::from_utf8_lossy(&plan.stderr);
+    assert!(error.contains("refusing to guess"), "{error}");
+    assert!(!error.contains("hint:"), "{error}");
+}

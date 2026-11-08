@@ -22,6 +22,13 @@ use crate::module::{self, ModuleError, ModuleSpec, Setting, Style, Target};
 /// an action: nothing here creates a file.
 pub const NO_CONFIG_HINT: &str = "create ~/.config/home-manager/home.nix (classic) or ~/.config/home-manager/flake.nix (flake), or run `home-manager init` to generate a starter configuration";
 
+/// Whether an `Unknown` reason means "no configuration exists" rather than an
+/// ambiguity or read failure. `discover` and `plan` must use the same test.
+#[must_use]
+pub fn is_missing_configuration_reason(reason: &str) -> bool {
+    reason.contains("no Home Manager configuration found")
+}
+
 /// What the user picked.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Selection {
@@ -91,7 +98,7 @@ impl std::fmt::Display for PrepareError {
         match self {
             Self::UnsupportedLayout { kind, reason } => {
                 write!(f, "cannot plan a `{kind}` configuration: {reason}")?;
-                if kind == "unknown" && reason.contains("no Home Manager configuration found") {
+                if kind == "unknown" && is_missing_configuration_reason(reason) {
                     write!(f, "\nhint: {NO_CONFIG_HINT}")?;
                 }
                 Ok(())
