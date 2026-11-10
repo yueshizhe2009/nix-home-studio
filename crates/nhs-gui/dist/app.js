@@ -66,6 +66,28 @@ function screenTitle() {
   if (heading) heading.focus();
 }
 
+// The `<main>` landmark is the fallback when a screen has no heading yet. It
+// carries `tabindex="-1"` so programmatic focus works without adding it to the
+// Tab order.
+function skipToContent() {
+  const heading = document.getElementById("screen-title");
+  if (heading) {
+    heading.focus();
+    return;
+  }
+  const main = document.getElementById("main-content");
+  if (main) main.focus();
+}
+
+function wireSkipLink() {
+  const skip = document.getElementById("skip-to-content");
+  if (!skip) return;
+  skip.addEventListener("click", (event) => {
+    event.preventDefault();
+    skipToContent();
+  });
+}
+
 function neighbourFocus(key) {
   const all = [...document.querySelectorAll("[data-focus]")];
   const index = all.findIndex((node) => node.dataset.focus === key);
@@ -223,6 +245,8 @@ function render(state) {
   lang.textContent = t("language");
   lang.setAttribute("aria-label", t("language_label"));
   focusKey(lang, "lang");
+  const skip = document.getElementById("skip-to-content");
+  if (skip) skip.textContent = t("skip_to_content");
   lang.onclick = () => {
     toggleLanguage();
     render(last);
@@ -796,6 +820,16 @@ function renderDiscover(state, panel) {
     );
   }
 
+  panel.append(
+    el("p", {
+      className: "muted",
+      textContent: t(`explain_${found.kind.replaceAll("-", "_")}`),
+    }),
+  );
+  if (found.kind === "unknown" && found.reason) {
+    panel.append(el("p", { className: "path", textContent: found.reason }));
+  }
+
   const table = el("table", { className: "facts" }, [
     el("tbody", {}, [
       factRow(t("layout"), el("span", { textContent: kind })),
@@ -818,9 +852,29 @@ function renderDiscover(state, panel) {
         }),
       ),
       factRow(t("generations"), el("span", { textContent: String(found.generations) })),
+      factRow(
+        t("current_generation"),
+        el("span", {
+          textContent:
+            found.current_generation === null || found.current_generation === undefined
+              ? t("none")
+              : String(found.current_generation),
+        }),
+      ),
+      factRow(
+        t("current_generation_link"),
+        el("span", {
+          className: "path",
+          textContent: found.current_generation_link || t("none"),
+        }),
+      ),
     ]),
   ]);
   panel.append(table);
+
+  if (found.generations > 0) {
+    panel.append(el("p", { className: "muted", textContent: t("generation_resolution_note") }));
+  }
 
   panel.append(
     el("div", { className: "notice" }, [
@@ -872,6 +926,7 @@ function subscribe() {
 
 async function boot() {
   applyLanguage(initialLanguage());
+  wireSkipLink();
   subscribe();
   try {
     const state = await invoke("state");

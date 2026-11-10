@@ -22,7 +22,7 @@ use nhs_app::{
 };
 use nhs_core::catalog::Filters;
 use nhs_core::classify::{Diagnosis, ErrorKind};
-use nhs_core::discovery::{Discovery, GenerationLink, Layout};
+use nhs_core::discovery::{Discovery, GenerationLink, GenerationState, Layout};
 use nhs_core::edit::{ChangeKind, FileChange, Plan};
 use nhs_core::validation::ValidationReport;
 use nhs_core::SettingValue;
@@ -34,6 +34,10 @@ fn discovery(layout: Layout) -> Discovery {
     Discovery {
         layout,
         attempts: Vec::new(),
+        generations: GenerationState {
+            generations: Vec::new(),
+            current: None,
+        },
     }
 }
 

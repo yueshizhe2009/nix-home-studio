@@ -204,6 +204,19 @@ pub struct DiscoveryInfo {
     pub root: Option<String>,
     pub main_file: Option<String>,
     pub generations: usize,
+    /// Why the layout is `unknown`, or `None` for a recognised layout. This is
+    /// the engine's own wording and is shown verbatim; the UI does not invent a
+    /// second diagnosis.
+    pub reason: Option<String>,
+    /// Id of the generation resolved from the `home-manager` profile link. When
+    /// that link is missing or cannot be matched, the core falls back to the
+    /// highest generation id; the UI must label that value as inferred rather
+    /// than confirmed, because the highest id is not proof of the active
+    /// generation.
+    pub current_generation: Option<u32>,
+    /// Link path for `current_generation`, for display. It is the per-generation
+    /// link, not the `home-manager` profile symlink.
+    pub current_generation_link: Option<String>,
 }
 
 /// A capability set is naturally several booleans; splitting it would make the
@@ -419,7 +432,20 @@ fn discovery_view(app: &App) -> Option<DiscoveryInfo> {
             .layout
             .main_file()
             .map(|path| path.to_string_lossy().into_owned()),
-        generations: found.layout.generations().len(),
+        generations: found.generations.generations.len(),
+        reason: found.layout.reason().map(str::to_string),
+        current_generation: found.generations.current,
+        current_generation_link: found
+            .generations
+            .current
+            .and_then(|current| {
+                found
+                    .generations
+                    .generations
+                    .iter()
+                    .find(|generation| generation.id == Some(current))
+            })
+            .map(|generation| generation.link.to_string_lossy().into_owned()),
     })
 }
 

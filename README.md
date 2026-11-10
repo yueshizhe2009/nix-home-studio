@@ -26,6 +26,12 @@ build → switch → package install → rollback once in a disposable sandbox o
 2026-11-08. The product still never activates a configuration; Gate 8 now has
 test-only evidence.
 
+The product route after that point is defined in
+[`docs/product-roadmap.md`](docs/product-roadmap.md): interaction and
+accessibility (M6.6, closed out 2026-11-09), Home Manager daily experience (M7),
+then a read-only Flake Foundation (M8), Nix Doctor (M9), Machine Profile (M10),
+Migration (M11) and Lock & Export (M12).
+
 ## Layout
 
 | Path | What lives there |

@@ -3,6 +3,7 @@
 
 use std::error::Error;
 use std::fs;
+use std::os::unix::fs::symlink;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -114,6 +115,80 @@ fn source_contains_no_write_or_spawn_apis() -> Result<(), Box<dyn Error>> {
         checked >= 5,
         "expected to scan the GUI sources, saw {checked}"
     );
+    Ok(())
+}
+
+#[test]
+fn check_mode_reports_resolved_generation() -> Result<(), Box<dyn Error>> {
+    let dir = TempDir::new("check-generation")?;
+    let home = dir.path().join("home");
+    let state = dir.path().join("state");
+    let config = home.join(".config/home-manager");
+    fs::create_dir_all(&config)?;
+    fs::write(
+        config.join("home.nix"),
+        "{ pkgs, ... }:\n{\n  imports = [ ];\n  home.stateVersion = \"24.05\";\n}\n",
+    )?;
+
+    let store = dir.path().join("store");
+    fs::create_dir_all(&store)?;
+    let first = store.join("hm-gen1-home-manager-generation");
+    let second = store.join("hm-gen2-home-manager-generation");
+    fs::write(&first, "generation 1")?;
+    fs::write(&second, "generation 2")?;
+    let profiles = state.join("nix/profiles");
+    fs::create_dir_all(&profiles)?;
+    symlink(&first, profiles.join("home-manager-1-link"))?;
+    symlink(&second, profiles.join("home-manager-2-link"))?;
+    symlink(&second, profiles.join("home-manager"))?;
+
+    let before = digest(dir.path())?;
+
+    let output = Command::new(env!("CARGO_BIN_EXE_nhs-gui"))
+        .arg("--check")
+        .env("HOME", &home)
+        .env("XDG_STATE_HOME", &state)
+        .env("XDG_CONFIG_HOME", home.join(".config"))
+        .output()?;
+    assert!(
+        output.status.success(),
+        "--check failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let state_json: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+    let discovery = state_json
+        .get("discovery")
+        .ok_or("--check emitted no discovery")?;
+    assert_eq!(
+        discovery.get("kind").and_then(serde_json::Value::as_str),
+        Some("classic-home")
+    );
+    assert_eq!(
+        discovery
+            .get("generations")
+            .and_then(serde_json::Value::as_u64),
+        Some(2),
+        "generation count must come from the profile snapshot"
+    );
+    assert_eq!(
+        discovery
+            .get("current_generation")
+            .and_then(serde_json::Value::as_u64),
+        Some(2),
+        "current generation must be resolved from the profile link"
+    );
+    let link = discovery
+        .get("current_generation_link")
+        .and_then(serde_json::Value::as_str)
+        .ok_or("current_generation_link is missing")?;
+    assert!(
+        link.ends_with("home-manager-2-link"),
+        "unexpected current generation link: {link}"
+    );
+
+    let after = digest(dir.path())?;
+    assert_eq!(before, after, "--check modified the generation fixture");
     Ok(())
 }
 

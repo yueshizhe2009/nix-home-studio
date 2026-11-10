@@ -24,6 +24,7 @@ node crates/nhs-gui/scripts/check-diff-fold.js
 node crates/nhs-gui/scripts/check-diagnosis.js
 node crates/nhs-gui/scripts/check-apply.js
 node crates/nhs-gui/scripts/check-a11y.js
+node crates/nhs-gui/scripts/check-discovery.js
 node crates/nhs-gui/scripts/check-packaging.js
 
 echo "== e2e isolation =="

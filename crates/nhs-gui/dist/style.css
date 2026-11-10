@@ -72,6 +72,27 @@ body {
   outline-offset: 2px;
 }
 
+/* Off-screen until it takes focus, so pointer users never see it but the first
+   Tab (and a screen reader's link list) exposes the bypass block. */
+.skip-link {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-4);
+  z-index: 10;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .app-header {
   display: flex;
   align-items: center;

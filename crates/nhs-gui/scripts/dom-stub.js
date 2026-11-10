@@ -20,6 +20,7 @@ class Node {
     this.disabled = false;
     this.value = "";
     this.id = "";
+    this.listeners = {};
   }
 
   set textContent(value) {
@@ -60,7 +61,17 @@ class Node {
     delete this.attributes[name];
   }
 
-  addEventListener() {}
+  addEventListener(type, listener) {
+    (this.listeners[type] ||= []).push(listener);
+  }
+
+  dispatchEvent(event) {
+    for (const listener of this.listeners[event.type] || []) listener(event);
+  }
+
+  click() {
+    this.dispatchEvent({ type: "click", preventDefault() {} });
+  }
 
   focus() {
     sandbox.document.activeElement = this;
@@ -83,6 +94,8 @@ function makeDocument() {
     "lang",
     "steps",
     "panel-content",
+    "main-content",
+    "skip-to-content",
     "actions",
     "status",
     "screen-title",
@@ -167,6 +180,8 @@ function load(distDir) {
       "globalThis.__renderError = renderError;" +
       "globalThis.__render = render;" +
       "globalThis.__setLang = applyLanguage;" +
+      "globalThis.__skipToContent = skipToContent;" +
+      "globalThis.__boot = boot;" +
       "globalThis.__t = t;",
     sandbox,
   );

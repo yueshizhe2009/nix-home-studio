@@ -39,15 +39,33 @@ Build plan → Space (review) → Validate → Confirm → Apply → History.
 - **125% / 150% scaling.** The host has one 1× output; changing the compositor
   scale would modify the desktop, which is out of scope.
 - **200% on a real HiDPI panel.** At `GDK_SCALE=2` the UI renders at 2× correctly,
-  but a 1180×760 logical window becomes 2360×1520 physical, larger than this
+  but a 1100×700 logical window becomes 2200×1400 physical, larger than this
   1440×900 panel, so the edges clip. That is a screen-size limit, not a scaling bug.
 - **Screen-reader table navigation** (headers are value-only).
 
-## Known follow-ups (not fixed, documented)
+## Close-out (2026-11-09)
 
-- No skip link; the sidebar precedes content in tab order.
-- The default 1180×760 logical window is large for 1366×768 laptops and does not
-  fit this panel at 2×; a smaller default or a persisted size belongs to M7.
+The two product follow-ups listed in the table were fixed in this change. No
+core, adapter, safety or Nix behaviour changed.
+
+| Item | Change | Evidence |
+| --- | --- | --- |
+| Skip link | `<a class="skip-link" id="skip-to-content" href="#main-content">` before `<nav>`; `<main id="main-content" tabindex="-1">`; activation moves focus to the screen heading (`#screen-title`) or, when absent, the main landmark | `check-a11y.js` asserts order, target, `tabindex="-1"`, Chinese localisation and focus landing; the running app exposes `link 'Skip to content'` in the AT-SPI tree |
+| Default window | 1180×760 → 1100×700; `minWidth/minHeight` remain 900×600 | `crates/nhs-gui/tauri.conf.json` |
+
+Real desktop: the GUI started on this host and the accessibility tree contains
+the skip link as a `link` before the headings. The compositor here is a tiling
+window manager, so it sized the window itself and the 1100×700 default geometry
+could not be observed directly. During the keyboard check, one AT-SPI synthetic
+key sequence was delivered to another window (an observed input change) before
+the focus target was confirmed; it was stopped immediately. That may have
+affected that window's input. No real keyboard walk is claimed in this run; the
+automated focus regression is the evidence for the focus move. A manual
+keyboard walk remains to be repeated when a floating or size-preserving session
+is available.
+
+## Remaining follow-ups
+
 - Table header cells expose values rather than names; verify with a real screen
   reader before adding more ARIA.
 

@@ -8,8 +8,8 @@
     "windows": [
       {
         "title": "Nix Home Studio",
-        "width": 1180,
-        "height": 760,
+        "width": 1100,
+        "height": 700,
         "minWidth": 900,
         "minHeight": 600
       }

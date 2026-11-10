@@ -7,6 +7,7 @@ const I18N = {
     app_title: "Nix Home Studio",
     language: "中文",
     language_label: "Switch to Chinese",
+    skip_to_content: "Skip to content",
 
     nav_label: "Steps",
     nav_discover: "Discover",
@@ -123,6 +124,10 @@ const I18N = {
     root: "Configuration root",
     main_file: "Main file",
     generations: "Generations",
+    current_generation: "Generation (resolved or inferred)",
+    current_generation_link: "Generation link",
+    generation_resolution_note:
+      "The generation is resolved from the home-manager profile link. If that link is missing or cannot be matched, the highest generation id is shown and is inferred, not confirmed.",
     none: "—",
     loading: "Loading…",
     nothing_found: "Nothing was detected on this machine.",
@@ -135,6 +140,16 @@ const I18N = {
     kind_flake_nixos: "NixOS flake",
     kind_profile_only: "no Home Manager configuration",
     kind_unknown: "unrecognised layout",
+    explain_classic_home:
+      "A home.nix was found without a flake. This is the classic layout: NHS can edit it after the usual diff and validation steps.",
+    explain_flake_home:
+      "Home Manager is defined in a flake. NHS edits the configuration the flake references; reading flake inputs and outputs is the next stage (M8).",
+    explain_flake_nixos:
+      "This is a system NixOS flake. NHS only reads it here; system configuration is outside this application's scope.",
+    explain_profile_only:
+      "No Home Manager configuration file was found. Only the installed generations are visible; create home.nix or flake.nix to start a configuration.",
+    explain_unknown:
+      "NHS refused to guess between the paths tried below. Nothing is editable until the layout is unambiguous.",
 
     read_only_title: "Read-only layout",
     notice_profile_only:
@@ -216,6 +231,7 @@ const I18N = {
     app_title: "Nix 家庭工作室",
     language: "EN",
     language_label: "切换到英文",
+    skip_to_content: "跳到主要内容",
 
     nav_label: "步骤",
     nav_discover: "发现",
@@ -330,6 +346,10 @@ const I18N = {
     root: "配置根目录",
     main_file: "主文件",
     generations: "代数",
+    current_generation: "代数（解析或推断）",
+    current_generation_link: "代数链接",
+    generation_resolution_note:
+      "代数由 home-manager profile 链接解析。若链接缺失或无法匹配，则显示最高代数 id，该值是推断值，不是已确认的当前代数。",
     none: "—",
     loading: "加载中……",
     nothing_found: "未在这台机器上检测到配置。",
@@ -342,6 +362,16 @@ const I18N = {
     kind_flake_nixos: "NixOS flake",
     kind_profile_only: "没有 Home Manager 配置",
     kind_unknown: "无法识别的布局",
+    explain_classic_home:
+      "找到没有 flake 的 home.nix。这是经典布局：NHS 可以在 diff 与校验之后编辑它。",
+    explain_flake_home:
+      "Home Manager 定义在 flake 中。NHS 编辑 flake 引用的配置；flake inputs/outputs 的读取属于下一阶段（M8）。",
+    explain_flake_nixos:
+      "这是系统级 NixOS flake。NHS 在这里只读取；系统配置不在本应用范围内。",
+    explain_profile_only:
+      "没有找到 Home Manager 配置文件，只能看到已安装的 generation。创建 home.nix 或 flake.nix 才能开始配置。",
+    explain_unknown:
+      "NHS 不会在下面这些路径之间猜测。布局不明确之前，不会启用编辑。",
 
     read_only_title: "只读布局",
     notice_profile_only:

@@ -1,6 +1,7 @@
 # Implementation plan
 
-Status: proposal, pending user approval. Nothing here has been started.
+Status: historical implementation record. M1–M7 (M7-gens) are implemented; the
+current route is `docs/product-roadmap.md`, not this historical plan.
 
 Inputs: `docs/upstream-audit.md`, `docs/architecture.md`.
 
@@ -592,6 +593,29 @@ are not in scope.
 `docs/m7-wp2-isolation-hardening.md` records the WP2 review fixes, the 69
 isolation tests, and the authorized 2026-11-08 sandbox build/switch/rollback
 transcript. Gate 8 has test-only evidence; the product still never activates.
+
+---
+
+## Roadmap after M7 (产品总纲)
+
+The long-term route is **`docs/product-roadmap.md`** (effective 2026-11-08). This
+plan keeps the M1–M7 record as history; it is not extended with new features by
+default. Numbering after this point follows the roadmap:
+
+| Stage | Scope | Status |
+| --- | --- | --- |
+| `M6.6` | Interaction, keyboard, AT-SPI, HiDPI | audit + six fixes done 2026-11-04 (`docs/m66-accessibility-audit.md`, `docs/m66-accessibility-report.md`); close-out 2026-11-09 added the skip link and changed the default window to 1100×700 (`check-a11y.js` covers structure, localisation and focus). Environment gaps remain: screen-reader speech, 125/150% scaling, a real HiDPI panel, and spoken table-header navigation — not verified |
+| `M7` (hm) | Home Manager daily experience | **in progress: WP1 layout guidance and WP2 configuration status implemented 2026-11-09 (`docs/m7-hm-task-cards.md`); WP3 next.** The closed 2026-11-08 `M7` above is the generations/rollback stage and is cited as `M7-gens` |
+| `M8` | Flake Foundation — read-only discovery, parsing, `flake.lock`, outputs, platform analysis, Flake screen | defined, not started. No flake editor, no input updates, no migration |
+| `M9` | Nix Doctor — nixfmt/statix/deadnix/nixd/nil diagnostics | defined, not started |
+| `M10` | Machine Profile — data model and export format first | defined, not started |
+| `M11` | Migration — compare, plan, then confirmed actions | defined, not started |
+| `M12` | Lock & Export — snapshots, lock state, reproducibility | defined, not started |
+
+Dependency: `M8` → `M10` → `M11` → `M12`; `M9` may run in parallel with `M10`
+but not before the M8 parse model exists. M8's parse results must be reused by
+M9–M12 rather than re-implemented. Each new domain (roadmap §5, B–E) needs its
+own design and boundary review before implementation.
 
 ---
 

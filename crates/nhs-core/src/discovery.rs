@@ -248,6 +248,11 @@ impl DiscoveryAttempt {
 pub struct Discovery {
     pub layout: Layout,
     pub attempts: Vec<DiscoveryAttempt>,
+    /// Read-only generations for the user's Home Manager profile. This is
+    /// populated for every layout, not only `ProfileOnly`, so a screen can show
+    /// the current generation without turning discovery into an activation
+    /// feature.
+    pub generations: GenerationState,
 }
 
 impl Discovery {
@@ -273,6 +278,8 @@ pub fn detect(fs: &dyn FsView, env: &EnvView) -> Discovery {
     let config_dir = env.config_home().join("home-manager");
     let flake = config_dir.join(FLAKE_NIX);
     let home_nix = config_dir.join(HOME_NIX);
+    let profiles = env.state_home().join("nix").join("profiles");
+    let generations = generation_state(fs, &profiles);
 
     let flake_text = probe_user_flake(fs, env, &flake, &config_dir, &mut attempts, &mut candidates);
 
@@ -316,22 +323,20 @@ pub fn detect(fs: &dyn FsView, env: &EnvView) -> Discovery {
     // Profile-only is the documented fallback: it only applies when no
     // configuration layout was found at all.
     if candidates.is_empty() {
-        let profiles = env.state_home().join("nix").join("profiles");
         let profile_link = profiles.join("home-manager");
         if fs.exists(&profile_link) || fs.is_symlink(&profile_link) {
-            let generations = generation_links(fs, &profiles);
             attempts.push(DiscoveryAttempt {
                 step: "state_profile".to_string(),
                 path: Some(profile_link),
                 accepted: true,
                 outcome: format!(
                     "accepted ProfileOnly: home-manager profile with {} generation link(s)",
-                    generations.len()
+                    generations.generations.len()
                 ),
             });
             candidates.push(Layout::ProfileOnly {
-                profile_dir: profiles,
-                generations,
+                profile_dir: profiles.clone(),
+                generations: generations.generations.clone(),
             });
         } else {
             attempts.push(DiscoveryAttempt {
@@ -364,7 +369,11 @@ pub fn detect(fs: &dyn FsView, env: &EnvView) -> Discovery {
         })
     };
 
-    Discovery { layout, attempts }
+    Discovery {
+        layout,
+        attempts,
+        generations,
+    }
 }
 
 fn probe_user_flake(

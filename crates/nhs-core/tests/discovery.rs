@@ -110,6 +110,38 @@ fn discovery_reports_profile_only_layout() {
         }
         other => panic!("expected ProfileOnly, got {other:?}"),
     }
+
+    assert_eq!(
+        discovery.generations.current,
+        Some(3),
+        "the generation snapshot must resolve the current profile link"
+    );
+}
+
+#[test]
+fn discovery_keeps_generations_for_classic_layout() {
+    let fixture = support::profile_only().dir(support::USER_CONFIG_DIR).file(
+        format!("{}/home.nix", support::USER_CONFIG_DIR),
+        support::CLASSIC_HOME_NIX,
+    );
+    let discovery = detect(&fixture.fs, &fixture.env);
+
+    assert!(matches!(discovery.layout, Layout::ClassicHome { .. }));
+    assert_eq!(discovery.generations.current, Some(3));
+    assert_eq!(discovery.generations.generations.len(), 3);
+}
+
+#[test]
+fn discovery_keeps_generations_for_flake_home_layout() {
+    let fixture = support::profile_only().dir(support::USER_CONFIG_DIR).file(
+        format!("{}/flake.nix", support::USER_CONFIG_DIR),
+        support::FLAKE_HOME_NIX,
+    );
+    let discovery = detect(&fixture.fs, &fixture.env);
+
+    assert!(matches!(discovery.layout, Layout::FlakeHome { .. }));
+    assert_eq!(discovery.generations.current, Some(3));
+    assert_eq!(discovery.generations.generations.len(), 3);
 }
 
 #[test]

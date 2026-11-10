@@ -10,6 +10,8 @@
 // Run: node crates/nhs-gui/scripts/check-a11y.js
 
 const { load, Node, findAll, find, distDir } = require("./dom-stub");
+const fs = require("fs");
+const path = require("path");
 
 const sandbox = load(distDir);
 sandbox.__setLang("en");
@@ -134,4 +136,52 @@ if (!historyText.includes("current")) {
   fail("current generation is not marked");
 }
 
-console.log("a11y ok: log routing, alert errors, aria-busy, result focus, table semantics");
+// 6. Skip link: present before the navigation, points at the main landmark,
+// and moves focus to the screen heading instead of leaving it on the link.
+const html = fs.readFileSync(path.join(distDir, "index.html"), "utf8");
+const skipTag = html.match(/<a[^>]*class="skip-link"[^>]*>/);
+if (!skipTag) fail("index.html has no skip link");
+if (!/href="#main-content"/.test(skipTag[0])) {
+  fail("skip link does not target #main-content");
+}
+const skipAt = html.indexOf('class="skip-link"');
+const navAt = html.indexOf('id="steps"');
+if (!(skipAt >= 0 && navAt > skipAt)) {
+  fail("skip link is not before the navigation");
+}
+const mainTag = html.match(/<main[^>]*id="main-content"[^>]*>/);
+if (!mainTag) fail("index.html has no #main-content landmark");
+if (!/tabindex="-1"/.test(mainTag[0])) {
+  fail("main landmark is not programmatically focusable");
+}
+
+sandbox.__setLang("zh");
+sandbox.__render(base());
+const skip = sandbox.document.getElementById("skip-to-content");
+if (skip.textContent !== "跳到主要内容") {
+  fail(`skip link is not localised: ${JSON.stringify(skip.textContent)}`);
+}
+sandbox.document.activeElement = null;
+sandbox.__skipToContent();
+const afterSkip = sandbox.document.activeElement;
+if (!afterSkip || afterSkip.id !== "screen-title") {
+  fail(`skip link did not focus the screen heading (active=${afterSkip && afterSkip.id})`);
+}
+
+// Run the real boot path so this also fails if `wireSkipLink()` is removed from
+// `boot()`, then activate the link through its registered click listener.
+(async () => {
+  await sandbox.__boot();
+  sandbox.document.activeElement = null;
+  skip.click();
+  const afterClick = sandbox.document.activeElement;
+  if (!afterClick || afterClick.id !== "screen-title") {
+    fail(`skip link click did not focus the screen heading (active=${afterClick && afterClick.id})`);
+  }
+  console.log(
+    "a11y ok: log routing, alert errors, aria-busy, result focus, table semantics, skip link click",
+  );
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
