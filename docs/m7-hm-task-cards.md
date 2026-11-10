@@ -69,8 +69,9 @@ carry it, and `Layout::generations()` is only populated for `profile-only`.
 - `DiscoveryInfo` exposes `current_generation` and `current_generation_link`;
   the generation count now comes from that snapshot rather than only
   `Layout::ProfileOnly`.
-- `--check` on the real host reports `profile-only`, 3 generations, current `3`,
-  link `…/home-manager-3-link`, matching `readlink` of the profile.
+- 2026-11-09 验收时，`--check` 在真实主机上报告 `profile-only`、3 generations、
+  current `3`、link `…/home-manager-3-link`，与当时的 `readlink` 一致；当前
+  2026-11-10 基线见 `docs/product-roadmap.md` §3（4 generations / current 4）。
 - `check-discovery.js` asserts the label and link; no process or write added.
 
 **Not in WP2:** generation switching, rollback buttons, history changes.

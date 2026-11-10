@@ -2,7 +2,7 @@
 
 Status: **生效中**（负责人 2026-11-08 确认）
 Applies to: 所有后续里程碑、任务卡、代码评审与发布说明
-Baseline checked: `HEAD = fec5785` = `origin/master`，工作区干净
+Baseline commit: `HEAD = origin/master = 75ef2c1`。本次文档核对时工作区包含 `docs/product-roadmap.md`、`docs/m7-hm-task-cards.md` 的未提交修改，以及未跟踪的 `.mcp.json`；后者未读取、未修改，不属于本次文档变更。工作区实时状态以 `git status` 为准。
 
 这是本项目的长期依据。当代码、任务卡或口头描述与本文件冲突时，先停下来说明冲突，
 由负责人决定改代码还是改本文件；不得由 Agent 自行扩大范围或另立一套路线。
@@ -32,6 +32,38 @@ Baseline checked: `HEAD = fec5785` = `origin/master`，工作区干净
 
 ---
 
+## 1.1 为什么使用 Nix，以及 NHS 提供什么价值
+
+Nix / Nixpkgs 提供底层软件包与依赖管理能力；NHS 提供发现、理解、管理、迁移和锁定这些环境的用户体验。两者不能混为一谈。
+
+### Package Access
+
+- Nixpkgs 是跨发行版的软件包集合。对于 apt、dnf、pacman 仓库没有的软件，用户可以在 Nixpkgs 中检查是否有对应软件包。
+- 这不意味着所有包都支持所有架构、平台或许可证条件，也不保证每个包都有二进制缓存；实际可用性取决于平台、许可证、构建状态和缓存命中。
+- NHS 将逐步把软件包在 Nixpkgs 中的存在性、平台支持情况和当前环境可用性转化为可理解的检查结果。默认使用 curated/offline 软件包目录；完整 Nixpkgs 查询作为可选能力提供，并根据后续里程碑逐步整合到 GUI，而不是要求用户先读完整 Nix 生态。
+
+### Dependency Isolation
+
+- Nix Store 使用独立路径保存不同依赖的构建结果，不同应用可以使用不同版本的同一依赖。
+- 这能显著降低传统共享系统库造成的版本冲突。
+- 但不得宣称完全消除依赖地狱、运行时兼容问题或构建缺陷；隔离的是构建与存储路径，不是所有运行时或外部系统约束。
+
+### Environment Management
+
+- Home Manager 管理用户级软件与配置。
+- 它不替代 pacman、apt、dnf 等发行版系统软件包管理器；系统级软件仍归发行版或 NixOS 配置。
+- NHS 只管理它能够确认属于 Home Manager 范围的内容。
+
+### Migration & Reproducibility
+
+- NHS 逐步帮助用户跨发行版、跨设备迁移和检查 Nix 环境。
+- `flake.lock` 锁定 flake inputs，不等于整个系统状态绝对一致；发行版、内核、硬件、用户配置和外部服务仍需单独记录。
+- 后续 NHS Profile（M10）负责补充机器、平台和用户环境信息；M11/M12 在此基础上做迁移与锁定。
+
+这四项是**产品价值说明**，不是新的开发 Domain，也不新增里程碑。Domain 与里程碑仍按 §5、§8 执行。
+
+---
+
 ## 2. 核心原则
 
 1. 简单易用优先于功能数量。
@@ -44,20 +76,25 @@ Baseline checked: `HEAD = fec5785` = `origin/master`，工作区干净
 
 ---
 
-## 3. 事实基线（2026-11-08 核对）
+## 3. 事实基线（2026-11-10 核对）
+
+本节记录截至核对日期的项目与真实主机状态，是带时间戳的事实快照，不代表后续持续不变的状态。发生变化时，应在下一次基线核对中更新；历史验收证据保留其原始日期与结果。
 
 | 项目 | 事实 |
 | --- | --- |
-| 分支 / 提交 | `master`，`fec5785`，已推送，远端一致 |
+| 分支 / 提交 | `master`，`75ef2c137ab0494ff5894118b45c8ce8af610cff`（`75ef2c1`），已推送，远端一致 |
 | 标签 | `m6.4` → `2616f2a`（未移动） |
-| 测试门禁 | **355 tests**，`check-all.sh` 通过，CI run `42493808449` 成功 |
+| 测试门禁 | **358 tests**（workspace 328 + GUI 30），`check-all.sh` 通过 |
+| GitHub Actions CI | run `42839249949`，completed / success，head `75ef2c1` |
 | M1–M6.3 | 已验收（发现、编辑引擎、模块生成、校验、GUI 骨架） |
 | M6.4 | 已验收，标签 `m6.4` |
 | M6.5 | 已验收（真实环境验收；修复“校验依赖 PATH”缺陷，提交 `c852646`） |
-| M6.6 | 审计与修复**已完成**（2026-11-04）：`docs/m66-accessibility-audit.md`、`docs/m66-accessibility-report.md`，6 个 GUI 缺陷已修 |
+| M6.6 | 审计、修复与收尾**已完成**（2026-11-04 / 2026-11-09）：`docs/m66-accessibility-audit.md`、`docs/m66-accessibility-report.md`；6 个 GUI 缺陷、skip link、1100×700 默认窗口已处理；环境缺口见下表 |
 | M7（历史，`M7-gens`） | **已关闭 2026-11-08**：generation 只读列表、打包、隔离 E2E、Gate 8 test-only 证据 |
+| M7 (hm) | **进行中**：WP1 布局识别、WP2 配置状态已实现（2026-11-09）；WP3 包管理流程下一步 |
 | 产品激活 / 回滚 | **产品从不执行** `home-manager switch` 或 rollback；E2E 只是测试沙箱 |
-| 真实主机 | profile-only 布局，3 generations，Home Manager 从 store 解析 |
+| 真实主机 | profile-only 布局，4 generations，resolved current generation 4，Home Manager 从 store 解析 |
+| 未跟踪文件 | `.mcp.json`（不属于本项目提交内容） |
 
 **M6.6 状态必须分五类，不得合并成一句“环境限制”**：
 
@@ -82,7 +119,7 @@ Baseline checked: `HEAD = fec5785` = `origin/master`，工作区干净
 | 写法 | 含义 |
 | --- | --- |
 | `M7-gens` | 2026-11-08 关闭的历史阶段（generation 列表、打包、E2E） |
-| `M7` / `M7-hm` | 本总纲的 Home Manager 完整体验（下一阶段） |
+| `M7` / `M7-hm` | 本总纲的 Home Manager 完整体验（当前阶段；WP1/WP2 已完成） |
 | `M8` … `M12` | 本总纲的 Flake Foundation 及以后，编号唯一且不得复用 |
 
 新代码、提交信息、任务卡中引用历史阶段必须写 `M7-gens`，避免与 `M7-hm` 混淆。
@@ -172,7 +209,7 @@ M9 与 M10 可并行，但都不得早于 M8 的解析结果落地。
 | **skip link** | **产品缺陷（WCAG 2.4.1）已修复 2026-11-09** | 在 `<nav>` 前加 skip-to-content，`<main>` 可编程聚焦；`check-a11y.js` 覆盖结构、目标、本地化和焦点落点；AT-SPI 暴露为 `link 'Skip to content'` |
 | **默认窗口尺寸** | **产品体验问题已修复 2026-11-09** | 默认窗口改为 1100×700，`minWidth/minHeight` 保持 900/600；1366×768 屏幕含标题栏不再溢出 |
 
-两项产品问题均已于 2026-11-09 修复，带 `check-a11y.js` 回归测试；真实桌面启动与 AT-SPI 语义已验证，但本机平铺合成器未按默认几何显示窗口，键盘焦点由自动化回归覆盖。环境与辅助技术验证缺口仍按上表处理。
+两项产品问题均已于 2026-11-09 修复，带 `check-a11y.js` 回归测试；真实桌面启动与 AT-SPI 语义已验证，但本机平铺合成器未按默认几何显示窗口，键盘焦点由自动化回归覆盖。skip link 的自动化回归（结构、本地化、点击绑定、焦点落点）已通过；真实键盘走查仍未完成，自动化覆盖不等于真机键盘验收。环境与辅助技术验证缺口仍按上表处理。
 M6.6 不增加任何 Nix 管理功能，也不因这两项改动放宽任何安全边界。
 
 ---
@@ -403,7 +440,8 @@ Gate 8（隔离 E2E）现有证据为 **PASS (test-only, 2026-11-08)**，
   真实桌面启动与 AT-SPI 语义已验证；本机平铺合成器未按默认几何显示窗口，键盘
   焦点由自动化回归覆盖。屏幕阅读器语音、125% / 150% 缩放、真实 200% HiDPI、
   表头语音导航仍是环境/辅助技术验证缺口，不得报成通过。
-- 下一阶段为 `M7` (hm)：Home Manager 完整体验；与 `M7-gens` 的边界见 §10.1，
-  不重做 generations、不扩大 rollback 权限、不引入系统级激活。
+- 当前阶段为 `M7` (hm)：Home Manager 完整体验；WP1 布局识别与 WP2 配置状态已完成，
+  WP3 包管理流程下一步。与 `M7-gens` 的边界见 §10.1，不重做 generations、
+  不扩大 rollback 权限、不引入系统级激活。
 - M8 之后依次 M9 → M10 → M11 → M12；M8 的解析结果必须被后续阶段复用。
 - 不内置 Neovim；不急于开发 NixOS 管理功能。
